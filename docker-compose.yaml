@@ -29,18 +29,19 @@ services:
 
   gateway:
     build:
-      context: .
+      context: ./chatbot-calendar-gateway
       dockerfile: Dockerfile
-    container_name: chatbot-gateway
+    container_name: chatbot-app-gateway
     depends_on:
       redpanda:
         condition: service_healthy
     environment:
-      # Make sure your Python code uses KAFKA_BOOTSTRAP_SERVERS env var
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_TOPIC: telegram-messages
     networks:
       - appnet
+    ports:
+      - "5000:5000"
 
 networks:
   appnet:

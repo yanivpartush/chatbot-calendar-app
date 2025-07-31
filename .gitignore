@@ -1,37 +1,72 @@
-# ============ Python ============
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.pdb
-*.so
-*.egg-info/
-.eggs/
-dist/
-build/
-venv/
-.venv/
-.env
-.env.*
-pip-wheel-metadata/
-.pytest_cache/
-.coverage
-htmlcov/
-.mypy_cache/
-.dmypy.json
-.pyre/
-
-# ============ Java ============
-# Compiled class files
-*.class
-
-# Log files
+# =========================
+# Global ignores
+# =========================
+.DS_Store
+Thumbs.db
 *.log
 
-# BlueJ files
-*.ctxt
+# =========================
+# VS Code
+# =========================
+.vscode/
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+# =========================
+# IntelliJ / JetBrains
+# =========================
+.idea/
+*.iml
+*.iws
+*.ipr
 
-# Package Fil
+# =========================
+# Python (chatbot-calendar-gateway)
+# =========================
+chatbot-calendar-gateway/__pycache__/
+chatbot-calendar-gateway/*.py[cod]
+chatbot-calendar-gateway/*.pyo
+chatbot-calendar-gateway/*.pyd
+chatbot-calendar-gateway/*.pdb
+chatbot-calendar-gateway/*.so
+chatbot-calendar-gateway/*.egg-info/
+chatbot-calendar-gateway/.eggs/
+chatbot-calendar-gateway/dist/
+chatbot-calendar-gateway/build/
+chatbot-calendar-gateway/venv/
+chatbot-calendar-gateway/.venv/
+chatbot-calendar-gateway/.env
+chatbot-calendar-gateway/.env.*
+chatbot-calendar-gateway/pip-wheel-metadata/
+chatbot-calendar-gateway/.pytest_cache/
+chatbot-calendar-gateway/.coverage
+chatbot-calendar-gateway/htmlcov/
+chatbot-calendar-gateway/.mypy_cache/
+chatbot-calendar-gateway/.dmypy.json
+chatbot-calendar-gateway/.pyre/
+
+# =========================
+# Java / Maven (chatbot-calendar-service)
+# =========================
+chatbot-calendar-service/HELP.md
+chatbot-calendar-service/target/
+chatbot-calendar-service/.mvn/wrapper/maven-wrapper.jar
+!chatbot-calendar-service/**/src/main/**/target/
+!chatbot-calendar-service/**/src/test/**/target/
+
+# STS
+chatbot-calendar-service/.apt_generated
+chatbot-calendar-service/.classpath
+chatbot-calendar-service/.factorypath
+chatbot-calendar-service/.project
+chatbot-calendar-service/.settings
+chatbot-calendar-service/.springBeans
+chatbot-calendar-service/.sts4-cache
+
+# NetBeans
+chatbot-calendar-service/nbproject/private/
+chatbot-calendar-service/nbbuild/
+chatbot-calendar-service/dist/
+chatbot-calendar-service/nbdist/
+chatbot-calendar-service/.nb-gradle/
+chatbot-calendar-service/build/
+!chatbot-calendar-service/**/src/main/**/build/
+!chatbot-calendar-service/**/src/test/**/build/

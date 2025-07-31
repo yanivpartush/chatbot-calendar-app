@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY chatbot_gateway_app.py /app/
+COPY /src/chatbot_gateway_app.py /app/
 COPY requirements.txt /app/
 COPY .env /app/
 

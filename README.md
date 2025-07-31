@@ -1,5 +1,5 @@
 # chatbot-calendar-gateway
 Chatbot calendar gateway
 
-
-docker-compose -p chatbot-calendar-app up
+# docker command : 
+docker-compose -p chatbot-calendar-app up -d
