@@ -1,13 +1,14 @@
 package com.chatbotcal.service;
 
-import com.chatbotcal.entity.User;
-import com.chatbotcal.entity.UserMessage;
-import com.chatbotcal.enums.MessageStatus;
+import com.chatbotcal.repository.entity.User;
+import com.chatbotcal.repository.entity.UserMessage;
+import com.chatbotcal.repository.enums.MessageStatus;
 import com.chatbotcal.repository.UserMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -39,6 +40,18 @@ public class UserMessageService {
     public Optional<UserMessage> findExistingMessage(String userId, String chatId, String messageText) {
         return userMessageRepository
                 .findTopByUserIdAndChatIdAndTextMessage(userId, chatId, messageText);
+    }
+
+    public List<UserMessage> getAllMessages() {
+        return userMessageRepository.findAll();
+    }
+
+    public void deleteMessage(Long id) {
+        userMessageRepository.deleteById(id);
+    }
+
+    public List<UserMessage> getMessagesByUserId(String userId) {
+        return userMessageRepository.findByUserId(userId);
     }
 
 

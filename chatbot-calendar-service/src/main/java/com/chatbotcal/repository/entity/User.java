@@ -1,7 +1,10 @@
-package com.chatbotcal.entity;
+package com.chatbotcal.repository.entity;
 
 import javax.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.util.Date;
 
 @Entity
 @Table(name = "user")
@@ -23,4 +26,9 @@ public class User {
 
     @Column(name = "username")
     private String username;
+
+    @Column(name = "creation_date", updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
+    private Date creationDate;
 }

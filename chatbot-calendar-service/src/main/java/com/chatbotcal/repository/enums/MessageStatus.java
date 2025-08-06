@@ -1,4 +1,4 @@
-package com.chatbotcal.enums;
+package com.chatbotcal.repository.enums;
 
 public enum MessageStatus {
     RECEIVED,

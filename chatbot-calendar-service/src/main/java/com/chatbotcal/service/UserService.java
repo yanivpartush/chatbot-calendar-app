@@ -1,6 +1,6 @@
 package com.chatbotcal.service;
 
-import com.chatbotcal.entity.User;
+import com.chatbotcal.repository.entity.User;
 import com.chatbotcal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,25 +42,6 @@ public class UserService {
 
     public Optional<User> getUserById(String id) {
         return userRepository.findById(id);
-    }
-
-    public void deleteUser(String id) {
-        userRepository.deleteById(id);
-    }
-
-    public User updateUser(String id, User updatedUser) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    user.setFirstName(updatedUser.getFirstName());
-                    user.setLastName(updatedUser.getLastName());
-                    user.setUsername(updatedUser.getUsername());
-                    return userRepository.save(user);
-                })
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-    }
-
-    public User createUser(User user) {
-        return userRepository.save(user);
     }
 
 }

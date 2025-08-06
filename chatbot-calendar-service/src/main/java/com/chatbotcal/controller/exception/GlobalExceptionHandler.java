@@ -1,4 +1,4 @@
-package com.chatbotcal.exception;
+package com.chatbotcal.controller.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

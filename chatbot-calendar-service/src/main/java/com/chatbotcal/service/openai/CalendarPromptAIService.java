@@ -1,12 +1,13 @@
 package com.chatbotcal.service.openai;
 
+import com.chatbotcal.util.JsonTemplateUtil;
 import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 @Service
-public class OpenAIService {
+public class CalendarPromptAIService {
 
     @Value("${openai.api-key}")
     private String apiKey;
@@ -17,14 +18,7 @@ public class OpenAIService {
     public String getCalendarEventFromPrompt(String prompt) throws Exception {
         OkHttpClient client = new OkHttpClient();
 
-        String jsonBody = "{\n" +
-                "  \"model\": \"gpt-4-1106-preview\",\n" +
-                "  \"messages\": [\n" +
-                "    {\"role\": \"system\", \"content\": \"המר הודעת טקסט לאובייקט JSON של פגישת יומן. הפלט צריך להכיל: title, date (YYYY-MM-DD), time (HH:mm), location (אם יש), participants (אם יש).\"},\n" +
-                "    {\"role\": \"user\", \"content\": \"" + prompt + "\"}\n" +
-                "  ],\n" +
-                "  \"temperature\": 0.1\n" +
-                "}";
+        String jsonBody = JsonTemplateUtil.loadTemplate("gpt-request-template.json", prompt);
 
         Request request = new Request.Builder()
                 .url(apiUrl)

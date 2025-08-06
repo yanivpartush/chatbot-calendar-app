@@ -1,6 +1,6 @@
-package com.chatbotcal.entity;
+package com.chatbotcal.repository.entity;
 
-import com.chatbotcal.enums.MessageStatus;
+import com.chatbotcal.repository.enums.MessageStatus;
 import lombok.*;
 
 import javax.persistence.*;
@@ -30,7 +30,6 @@ public class UserMessage {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private MessageStatus status;
-
 
 }
 

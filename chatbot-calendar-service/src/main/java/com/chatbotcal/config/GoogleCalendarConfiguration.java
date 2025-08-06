@@ -1,6 +1,6 @@
 package com.chatbotcal.config;
 
-import com.chatbotcal.service.google.GoogleCalendarService;
+import com.chatbotcal.service.google.CalendarService;
 import com.google.api.services.calendar.Calendar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +10,6 @@ public class GoogleCalendarConfiguration {
 
     @Bean
     public Calendar googleCalendarService() throws Exception {
-        return new GoogleCalendarService().getCalendarService();
+        return new CalendarService().getCalendarService();
     }
 }

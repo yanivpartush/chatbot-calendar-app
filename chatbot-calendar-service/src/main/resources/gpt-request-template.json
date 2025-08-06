@@ -1,0 +1,14 @@
+{
+  "model": "gpt-4-1106-preview",
+  "messages": [
+    {
+      "role": "system",
+      "content": "המר הודעת טקסט לאובייקט JSON של פגישת יומן. הפלט צריך להכיל רק JSON חוקי בלי הערות, בלי טקסט חיצוני. הפלט צריך להכיל את השדות הבאים: title, date (YYYY-MM-DD), time (HH:mm), location (אם יש), participants (אם יש)."
+    },
+    {
+      "role": "user",
+      "content": "{{prompt}}"
+    }
+  ],
+  "temperature": 0.1
+}

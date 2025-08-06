@@ -8,18 +8,11 @@ spring:
     rest:
       base-path: /chatbot-calendar/api
   jpa:
-    # postgresSQL setting
     database-platform: org.hibernate.dialect.MySQL8Dialect
     show-sql: false
     hibernate:
       ddl-auto: create
-    # mySQL jpa setting
-    # database-platform: org.hibernate.dialect.MySQL8Dialect
-    #    show-sql: true
-    #    hibernate:
-    #     ddl-auto: update // if its create it will recreate the db table everytime that we build the project or restart app
   datasource:
-    # postgresSQL data source
     url: jdbc:mysql://localhost:3306/telegramUserDetails?createDatabaseIfNotExist=true
     username: root
     password: techbankRootPsw
@@ -34,7 +27,6 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      #value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
         spring:
           json:
