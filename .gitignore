@@ -51,6 +51,7 @@ chatbot-calendar-service/target/
 chatbot-calendar-service/.mvn/wrapper/maven-wrapper.jar
 !chatbot-calendar-service/**/src/main/**/target/
 !chatbot-calendar-service/**/src/test/**/target/
+chatbot-calendar-service/tokens/
 
 # STS
 chatbot-calendar-service/.apt_generated

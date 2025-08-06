@@ -32,16 +32,26 @@ def delivery_report(err, msg):
         logger.info(f"Message delivered to {msg.topic()} [{msg.partition()}]")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"RAW UPDATE: {update.to_dict()}")
+    user_id = update.effective_user.id
     chat_id = update.effective_chat.id
     user_text = update.message.text
+
+    first_name = update.effective_user.first_name
+    last_name = update.effective_user.last_name
+    username = update.effective_user.username
 
     # 1. Immediate reply to user
     await context.bot.send_message(chat_id=chat_id, text="Message received! We'll process it soon.")
 
     # 2. Push the message to Kafka (non-blocking)
     data = {
-        "chat_id": chat_id,
-        "text": user_text
+        "userId": user_id,
+        "chatId": chat_id,
+        "text": user_text,
+        "firstName": first_name,
+        "lastName": last_name,
+        "username": username
     }
 
     # Serialize as string (or JSON)
@@ -54,7 +64,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
+    #logger.info("Yaniv TEST !!!!!")
     logger.info("Bot is running...")
     app.run_polling()
 
