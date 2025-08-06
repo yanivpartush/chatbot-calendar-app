@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TelegramMsgEvent {
+public class TelegramEvent {
     private String userId;
     private String chatId;
     private String firstName;

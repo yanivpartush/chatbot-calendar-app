@@ -1,9 +1,9 @@
 package com.chatbotcal.infrastructure.handler;
 
-import com.chatbotcal.event.TelegramMsgEvent;
+import com.chatbotcal.event.TelegramEvent;
 
 public interface EventHandler {
 
-    void on(TelegramMsgEvent event);
+    void on(TelegramEvent event);
 
 }

@@ -34,12 +34,12 @@ public class CalendarMeetingCreator {
         }
         eventToCreate.setDescription(description);
 
-        DateTime startDateTime = new DateTime(eventData.getStartDateTime());
+        DateTime startDateTime = new DateTime(eventData.getStartDateTime() + "+03:00" );
         EventDateTime start = new EventDateTime()
                 .setDateTime(startDateTime)
                 .setTimeZone("Asia/Jerusalem");
 
-        DateTime endDateTime = new DateTime(eventData.getEndDateTime());
+        DateTime endDateTime = new DateTime(eventData.getEndDateTime() + "+03:00" );
         EventDateTime end = new EventDateTime()
                 .setDateTime(endDateTime)
                 .setTimeZone("Asia/Jerusalem");

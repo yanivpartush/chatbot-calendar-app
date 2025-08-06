@@ -21,7 +21,7 @@ public class CalendarService {
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
     public Calendar getCalendarService() throws Exception {
-        InputStream in = getClass().getClassLoader().getResourceAsStream("google-cal-credentials.json");
+        InputStream in = getClass().getClassLoader().getResourceAsStream("google-calendar-credentials.json");
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(

@@ -1,6 +1,6 @@
 package com.chatbotcal.infrastructure.consumer;
 
-import com.chatbotcal.event.TelegramMsgEvent;
+import com.chatbotcal.event.TelegramEvent;
 import com.chatbotcal.infrastructure.handler.EventHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public class TelegramEventConsumer implements EventConsumer {
     public void consume(String message, Acknowledgment ack) { //
         try {
             logger.info("Received message from Kafka: {}", message);
-            TelegramMsgEvent event = new ObjectMapper().readValue(message, TelegramMsgEvent.class);
+            TelegramEvent event = new ObjectMapper().readValue(message, TelegramEvent.class);
             this.eventHandler.on(event);
         } catch (Exception e) {
             logger.error("Error while processing message: {}", e);
