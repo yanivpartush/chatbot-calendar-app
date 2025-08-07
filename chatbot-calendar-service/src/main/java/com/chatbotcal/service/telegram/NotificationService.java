@@ -48,7 +48,7 @@ public class NotificationService {
                     apiUrl,
                     botToken, chatId, URLEncoder.encode(messageText, StandardCharsets.UTF_8)
             );
-
+            logger.info("Sending Telegram message to URL: {}", urlString);
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");

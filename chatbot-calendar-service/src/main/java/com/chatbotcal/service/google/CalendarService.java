@@ -14,14 +14,16 @@ import com.google.api.services.calendar.CalendarScopes;
 import java.io.*;
 import java.util.Collections;
 
+import static com.chatbotcal.util.JsonTemplateUtil.loadExternalResource;
+
 public class CalendarService {
 
     private static final String APPLICATION_NAME = "Chatbot calendar";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
+    private static final String TOKENS_DIRECTORY_PATH = System.getenv("CONFIG_DIR") + "/tokens";
 
     public Calendar getCalendarService() throws Exception {
-        InputStream in = getClass().getClassLoader().getResourceAsStream("google-calendar-credentials.json");
+        InputStream in = loadExternalResource("google-calendar-credentials.json");
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(

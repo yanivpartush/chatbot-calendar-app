@@ -1,5 +1,5 @@
 server:
-  port: 5001
+  port: 8080
 
 spring:
   main:
@@ -37,5 +37,5 @@ openai:
   api-key: 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
   api-url: https://api.openai.com/v1/chat/completions
 telegram:
-  bot-token: 7783298260:AAFR5dFPIY56_-HXEsCN93UpeJ49BgXa3y0
+  bot-token: 7783298260:AAHvB0VjuUsErYnXfwPgHwe0lIfLhymGDDY
   api-url: https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s
