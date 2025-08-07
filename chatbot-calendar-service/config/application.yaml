@@ -4,9 +4,6 @@ server:
 spring:
   main:
     banner-mode: off
-  data:
-    rest:
-      base-path: /chatbot-calendar/api
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     show-sql: false

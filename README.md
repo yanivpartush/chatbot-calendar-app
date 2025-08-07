@@ -8,7 +8,7 @@
 
 ```
 
-## chatbot-calendar-service ( Not executed as port of docker-compose )
+## chatbot-calendar-service ( Not executed as part of docker-compose )
 
 ```
 1. define tokens in application.yaml file :  api-key ( Open-AI ) and bot-token ( Telegram )
@@ -26,6 +26,8 @@
 ```
 
 1. under ..\chatbot-calendar-app\ run the following cmd : docker-compose -p chatbot-calendar-app up -d --build
+
+* In case you wanna restart the system please run : docker-compose -p chatbot-calendar-app down
 
 ```
 

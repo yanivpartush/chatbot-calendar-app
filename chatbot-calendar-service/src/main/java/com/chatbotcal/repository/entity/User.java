@@ -4,7 +4,9 @@ import javax.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -31,4 +33,7 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     private Date creationDate;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserMessage> messages = new ArrayList<>();
 }

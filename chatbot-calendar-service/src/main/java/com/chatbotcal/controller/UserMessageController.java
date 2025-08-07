@@ -1,24 +1,34 @@
 package com.chatbotcal.controller;
 
-
+import com.chatbotcal.controller.dto.UserMessageResponseDto;
 import com.chatbotcal.repository.entity.UserMessage;
 import com.chatbotcal.service.UserMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/messages")
+@RequestMapping("/api/messages")
 @RequiredArgsConstructor
 public class UserMessageController {
 
     private final UserMessageService userMessageService;
 
     @GetMapping
-    public List<UserMessage> getAllMessages() {
-        return userMessageService.getAllMessages();
+    public ResponseEntity<List<UserMessageResponseDto>> getAllMessages() {
+        List<UserMessage> messages = userMessageService.getAllMessages();
+
+        List<UserMessageResponseDto> response = messages.stream()
+                .map(UserMessageResponseDto::fromEntity)
+                .toList();
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
@@ -26,15 +36,5 @@ public class UserMessageController {
         userMessageService.deleteMessage(id);
         return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<UserMessage>> getMessagesByUserId(@PathVariable String userId) {
-        List<UserMessage> messages = userMessageService.getMessagesByUserId(userId);
-        if (messages.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(messages);
-    }
-
 
 }
