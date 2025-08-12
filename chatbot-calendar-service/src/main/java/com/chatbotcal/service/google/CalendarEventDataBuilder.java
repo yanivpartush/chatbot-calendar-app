@@ -31,7 +31,7 @@ public class CalendarEventDataBuilder {
         }
 
         String startDateTime = String.format("%sT%s:00", date, time);
-        String endDateTime = String.format("%sT%s:00", date, LocalTime.parse(time).plusMinutes(30));
+        String endDateTime = String.format("%sT%s:00", date, LocalTime.parse(time).plusMinutes(60));
 
         return CalendarEventData.builder()
                 .title(title)

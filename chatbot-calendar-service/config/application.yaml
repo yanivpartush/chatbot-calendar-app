@@ -1,4 +1,5 @@
 server:
+  address: 0.0.0.0
   port: 8080
 
 spring:
@@ -33,6 +34,11 @@ spring:
 openai:
   api-key: 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
   api-url: https://api.openai.com/v1/chat/completions
+
 telegram:
-  bot-token: 7783298260:AAHvB0VjuUsErYnXfwPgHwe0lIfLhymGDDY
+  bot-token: 7783298260:AAE9HKfvcocQOQrwL1QM7HVMeXX_Mm5tGcI
   api-url: https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s
+
+app:
+  # domain: https://myapp.com    # Production
+  domain: http://localhost:8080  # Dev
