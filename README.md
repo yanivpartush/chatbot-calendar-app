@@ -29,6 +29,13 @@
 
 * In case you wanna restart the system please run : docker-compose -p chatbot-calendar-app down
 
+
+SELECT * FROM telegramUserDetails.user;
+
+SELECT * FROM telegramUserDetails.user_tokens;
+
+SELECT * FROM telegramUserDetails.user_messages;
+
 ```
 
 

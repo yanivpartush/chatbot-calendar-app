@@ -1,49 +1,38 @@
 package com.chatbotcal.service.google;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
-import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
-import com.google.api.client.googleapis.auth.oauth2.*;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.*;
-import com.google.api.client.json.jackson2.*;
-import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.model.Event;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.util.Collections;
-
-import static com.chatbotcal.util.JsonTemplateUtil.loadExternalResource;
-
+@Service
+@RequiredArgsConstructor
 public class CalendarService {
 
     private static final String APPLICATION_NAME = "Chatbot calendar";
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = System.getenv("CONFIG_DIR") + "/tokens";
+    public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
-    public Calendar getCalendarService() throws Exception {
-        InputStream in = loadExternalResource("google-calendar-credentials.json");
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                JSON_FACTORY,
-                clientSecrets,
-                Collections.singleton(CalendarScopes.CALENDAR))
-                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
-                .setAccessType("offline")
-                .build();
-
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-
-        Credential credential = new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-
+    private Calendar buildClient(Credential credential) throws Exception {
         return new Calendar.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(),
                 JSON_FACTORY,
                 credential)
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+
     }
+
+    public Event createEvent(Credential credential, Event event) throws Exception {
+        Calendar client = buildClient(credential);
+        return client.events().insert("primary", event).execute();
+    }
+
+
 }

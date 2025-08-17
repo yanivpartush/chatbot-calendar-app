@@ -48,13 +48,12 @@ services:
       dockerfile: Dockerfile
     container_name: chatbot-app-gateway
     depends_on:
-      redpanda:
-        condition: service_healthy
-      mysql:
-        condition: service_started
+      - redpanda
+      - mysql
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_TOPIC: telegram-messages
+      TELEGRAM_TOKEN: 7783298260:AAE9HKfvcocQOQrwL1QM7HVMeXX_Mm5tGcI
     networks:
       - appnet
     ports:
@@ -64,6 +63,8 @@ services:
 networks:
   appnet:
     driver: bridge
+
+
 
 volumes:
   mysql_data:

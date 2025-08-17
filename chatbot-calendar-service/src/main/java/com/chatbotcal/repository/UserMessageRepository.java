@@ -10,8 +10,6 @@ import java.util.Optional;
 @Repository
 public interface UserMessageRepository extends JpaRepository<UserMessage, Long> {
 
-    public Optional<UserMessage> findTopByUserIdAndChatIdAndTextMessage(
-            String userId, String chatId, String textMessage);
 
     public List<UserMessage> findByUserId(String userId);
 

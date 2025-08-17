@@ -1,15 +1,14 @@
 package com.chatbotcal.service;
 
+import com.chatbotcal.repository.UserMessageRepository;
 import com.chatbotcal.repository.entity.User;
 import com.chatbotcal.repository.entity.UserMessage;
 import com.chatbotcal.repository.enums.MessageStatus;
-import com.chatbotcal.repository.UserMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,12 +17,12 @@ public class UserMessageService {
     private final UserMessageRepository userMessageRepository;
 
     @Transactional
-    public UserMessage saveUserMessage(User user, String chatId, String textMessage, MessageStatus status) {
+    public UserMessage saveUserMessage(User user, String textMessage, MessageStatus status) {
 
         UserMessage userMessage = UserMessage.builder()
-                                             .user(user).chatId(chatId)
+                                             .user(user)
                                              .textMessage(textMessage)
-                .status(status)
+                                             .status(status)
                                              .build();
 
         return userMessageRepository.save(userMessage);
@@ -38,10 +37,6 @@ public class UserMessageService {
         return message;
     }
 
-    public Optional<UserMessage> findExistingMessage(String userId, String chatId, String messageText) {
-        return userMessageRepository
-                .findTopByUserIdAndChatIdAndTextMessage(userId, chatId, messageText);
-    }
 
     public List<UserMessage> getAllMessages() {
         return userMessageRepository.findAll();
@@ -50,11 +45,6 @@ public class UserMessageService {
     public void deleteMessage(Long id) {
         userMessageRepository.deleteById(id);
     }
-
-    public List<UserMessage> getMessagesByUserId(String userId) {
-        return userMessageRepository.findByUserId(userId);
-    }
-
 
 
 }

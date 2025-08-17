@@ -13,4 +13,5 @@ public class TelegramEvent {
     private String lastName;
     private String username;
     private String text;
+    private String timeZone;
 }

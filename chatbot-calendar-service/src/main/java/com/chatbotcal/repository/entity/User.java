@@ -29,6 +29,9 @@ public class User {
     @Column(name = "username")
     private String username;
 
+    @Column(name = "time_zone")
+    private String timeZone;
+
     @Column(name = "creation_date", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
@@ -36,4 +39,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserMessage> messages = new ArrayList<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private UserToken token;
 }

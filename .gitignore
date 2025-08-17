@@ -33,8 +33,7 @@ chatbot-calendar-gateway/dist/
 chatbot-calendar-gateway/build/
 chatbot-calendar-gateway/venv/
 chatbot-calendar-gateway/.venv/
-chatbot-calendar-gateway/.env
-chatbot-calendar-gateway/.env.*
+
 chatbot-calendar-gateway/pip-wheel-metadata/
 chatbot-calendar-gateway/.pytest_cache/
 chatbot-calendar-gateway/.coverage

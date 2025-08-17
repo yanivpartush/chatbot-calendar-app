@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 public class UserMessageResponseDto {
     private Long id;
     private String userId;
-    private String chatId;
     private String textMessage;
     private MessageStatus status;
 
@@ -22,7 +21,6 @@ public class UserMessageResponseDto {
         return UserMessageResponseDto.builder()
                 .id(entity.getId())
                 .userId(entity.getUser().getId())
-                .chatId(entity.getChatId())
                 .textMessage(entity.getTextMessage())
                 .status(entity.getStatus())
                 .build();

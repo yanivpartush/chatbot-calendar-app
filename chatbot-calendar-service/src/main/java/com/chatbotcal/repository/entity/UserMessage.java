@@ -21,11 +21,9 @@ public class UserMessage {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "chat_id", nullable = false)
-    private String chatId;
-
     @Column(name = "text_message", nullable = false, length = 1000)
     private String textMessage;
+
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)

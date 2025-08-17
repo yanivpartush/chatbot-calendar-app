@@ -28,7 +28,15 @@ public class NotificationService {
                 "Your calendar event has been failed\n\nTitle: %s",
                 telegramEvent.getText()
         );
-        notifyUser(telegramEvent, messageText);
+        notifyUser(telegramEvent.getUserId(), messageText);
+    }
+
+    public void notifyUserOnAuthorizationRequired(TelegramEvent telegramEvent, String link) {
+        String messageText = String.format(
+                "Message was not processed, Click the link to connect your Google Calendar : %s",
+                link
+        );
+        notifyUser(telegramEvent.getUserId(), messageText);
     }
 
     public void notifyUserOnEventCreation(TelegramEvent telegramEvent, Event createdEvent) {
@@ -37,16 +45,16 @@ public class NotificationService {
                 createdEvent.getSummary(),
                 createdEvent.getHtmlLink()
         );
-        notifyUser(telegramEvent, messageText);
+        notifyUser(telegramEvent.getUserId(), messageText);
     }
 
-    public void notifyUser(TelegramEvent telegramEvent, String messageText) {
-        String chatId = telegramEvent.getChatId();
+    public void notifyUser(String userId, String messageText) {
+        //String userId = telegramEvent.getUserId();
 
         try {
             String urlString = String.format(
                     apiUrl,
-                    botToken, chatId, URLEncoder.encode(messageText, StandardCharsets.UTF_8)
+                    botToken, userId, URLEncoder.encode(messageText, StandardCharsets.UTF_8)
             );
             logger.info("Sending Telegram message to URL: {}", urlString);
             URL url = new URL(urlString);
@@ -58,7 +66,7 @@ public class NotificationService {
                 logger.error("Failed to send Telegram message. Response code: {}", responseCode);
             }
         } catch (Exception e) {
-            logger.error("Failed to notify user. Reason: {}", e);
+            logger.error("Failed to notify user msg [{}]. Reason: {}", messageText, e);
         }
     }
 }

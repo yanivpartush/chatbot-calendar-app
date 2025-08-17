@@ -1,15 +1,17 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from confluent_kafka import Producer
-from dotenv import load_dotenv
+from datetime import datetime, timezone
 
 import os
 import json
 import logging
+import time
 
-load_dotenv() # Load .env file
 
-TOKEN = os.getenv("TOKEN")
+
+
+TOKEN = os.getenv("TELEGRAM_TOKEN")
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
 KAFKA_TOPIC = os.getenv("KAFKA_TOPIC")
 
@@ -40,6 +42,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     first_name = update.effective_user.first_name
     last_name = update.effective_user.last_name
     username = update.effective_user.username
+    tz_name = time.tzname[time.daylight]
 
     # 1. Immediate reply to user
     await context.bot.send_message(chat_id=chat_id, text="Message received! We'll process it soon.")
@@ -47,11 +50,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 2. Push the message to Kafka (non-blocking)
     data = {
         "userId": user_id,
-        "chatId": chat_id,
         "text": user_text,
         "firstName": first_name,
         "lastName": last_name,
-        "username": username
+        "username": username,
+        "timeZone": tz_name
     }
 
     # Serialize as string (or JSON)

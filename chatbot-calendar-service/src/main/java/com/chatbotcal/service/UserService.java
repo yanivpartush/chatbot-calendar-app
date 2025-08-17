@@ -1,7 +1,7 @@
 package com.chatbotcal.service;
 
-import com.chatbotcal.repository.entity.User;
 import com.chatbotcal.repository.UserRepository;
+import com.chatbotcal.repository.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,8 @@ public class UserService {
             String userId,
             String firstName,
             String lastName,
-            String username) {
+            String username,
+            String timeZone) {
         Optional<User> existing = userRepository.findById(userId);
         if (existing.isPresent()) {
             return existing.get();
@@ -31,6 +32,7 @@ public class UserService {
                 .firstName(firstName)
                 .lastName(lastName)
                 .username(username)
+                .timeZone(timeZone)
                 .build();
 
         return userRepository.save(newUser);
