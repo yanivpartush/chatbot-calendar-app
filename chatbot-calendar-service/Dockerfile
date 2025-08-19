@@ -21,4 +21,4 @@ COPY --from=build /app/target/chatbot-calendar-service-0.0.1-SNAPSHOT.jar .
 COPY config/ ${CONFIG_DIR}
 
 # הרצת האפליקציה
-CMD ["java", "-jar", "chatbot-calendar-service-0.0.1-SNAPSHOT.jar", "--spring.config.location=file:/app/config/application.yaml"]
+CMD ["java", "-jar", "chatbot-calendar-service-0.0.1-SNAPSHOT.jar", "--spring.config.location=file:${CONFIG_DIR}/application.yaml", "-Dlogging.config=${CONFIG_DIR}/logback-spring.xml"]

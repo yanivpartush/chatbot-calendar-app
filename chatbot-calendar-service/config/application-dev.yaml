@@ -1,17 +1,9 @@
-server:
-  address: 0.0.0.0
-  port: 8080
-
 spring:
-  main:
-    banner-mode: off
   datasource:
     url: jdbc:mysql://localhost:3306/telegramUserDetails?createDatabaseIfNotExist=true
     username: root
     password: techbankRootPsw
   jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    show-sql: false
     hibernate:
       ddl-auto: create
   kafka:
@@ -34,14 +26,9 @@ spring:
       bootstrap-servers: localhost:19092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
 openai:
-  api-url: https://api.openai.com/v1/chat/completions
   api-key: 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
 
 telegram:
-  api-url: https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s
   bot-token: 7783298260:AAE9HKfvcocQOQrwL1QM7HVMeXX_Mm5tGcI
 
-google:
-  redirect-uri: http://localhost:8080/auth/callback

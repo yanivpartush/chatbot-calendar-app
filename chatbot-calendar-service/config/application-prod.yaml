@@ -1,23 +1,45 @@
+server:
+  address: 0.0.0.0
+  port: 8080
+
 spring:
   datasource:
-    url: jdbc:mysql://mysql:3306/telegramUserDetails?createDatabaseIfNotExist=true
-    username: root
-    password: ${MYSQL_ROOT_PASSWORD}
+    url: jdbc:mysql://mysql:3306/telegramUserDetails
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: false
     hibernate:
-      ddl-auto: validate   # לא יוצרים schema ב־prod, רק מאמתים
+      ddl-auto: validate
   kafka:
+    topic:
+      telegram-messages: ${KAFKA_TOPIC}
+    listener:
+      ack-mode: MANUAL_IMMEDIATE
     consumer:
       bootstrap-servers: kafka:9092
+      group-id: telegramConsumer
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: '*'
+    producer:
+      bootstrap-servers: kafka:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 openai:
+  api-url: ${OPENAI_API_URL}
   api-key: ${OPENAI_API_KEY}
 
 telegram:
+  api-url: ${TELEGRAM_API_URL}
   bot-token: ${TELEGRAM_TOKEN}
 
-app:
-  domain: https://myapp.com
-
 google:
-  redirect-uri: https://myapp.com/auth/callback
+  redirect-uri: http://${APP_DOMAIN}/auth/callback

@@ -21,7 +21,7 @@ services:
       - "9092:9092"
       - "19092:19092"
     healthcheck:
-      test: ["CMD-SHELL", "rpk cluster info || exit 1"]
+      test: [ "CMD-SHELL", "rpk cluster info || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -32,8 +32,8 @@ services:
     image: mysql:8.0
     container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: techbankRootPsw
-      MYSQL_DATABASE: telegramUserDetails
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
@@ -51,42 +51,48 @@ services:
       - redpanda
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      KAFKA_TOPIC: telegram-messages
+      KAFKA_TOPIC: ${KAFKA_TOPIC}
       TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
-      TIME_ZONE: Asia/Jerusalem
+      TIME_ZONE: ${TIME_ZONE}
     networks:
       - appnet
     ports:
       - "5000:5000"
 
-#  service:
-#    build:
-#      context: ./chatbot-calendar-service
-#      dockerfile: Dockerfile
-#    container_name: chatbot-calendar-service
-#    depends_on:
-#      - redpanda
-#      - mysql
-#    environment:
-#      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-#      KAFKA_TOPIC: telegram-messages
-#      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
-#
-#      # OpenAI
-#      OPENAI_API_URL: ${OPENAI_API_URL}
-#      OPENAI_API_KEY: ${OPENAI_API_KEY}
-#
-#      # Telegram API
-#      TELEGRAM_API_URL: ${TELEGRAM_API_URL}
-#
-#      # Google OAuth
-#      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
-#
-#      SPRING_PROFILES_ACTIVE: prod
-#    networks:
-#      - appnet
-#    ports:
-#      - "8080:8080"
+  service:
+    build:
+      context: ./chatbot-calendar-service
+      dockerfile: Dockerfile
+    container_name: chatbot-calendar-service
+    depends_on:
+      - redpanda
+      - mysql
+    environment:
+      # Kafka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: ${KAFKA_TOPIC}
+
+      # Telegram
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      TELEGRAM_API_URL: ${TELEGRAM_API_URL}
+
+      # OpenAI
+      OPENAI_API_URL: ${OPENAI_API_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+      # Spring profile
+      SPRING_PROFILES_ACTIVE: prod
+
+      # DB / App
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_DOMAIN: ${APP_DOMAIN}
+
+    networks:
+      - appnet
+    ports:
+      - "8080:8080"
+
 
 
 networks:

@@ -1,5 +1,11 @@
 # Chatbot Calendar Application - Dev system properties
 
+## IntelliJ IDEA Configuration
+
+```
+1. --spring.config.location=file:${CONFIG_DIR}/application.yaml --logging.config=file:${CONFIG_DIR}/logback-spring.xml
+
+```
 
 ## chatbot-calendar-gateway
 

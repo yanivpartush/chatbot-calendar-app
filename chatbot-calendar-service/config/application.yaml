@@ -1,14 +1,36 @@
 server:
   address: 0.0.0.0
   port: 8080
+  tomcat:
+    apr: false
 
+spring:
+  profiles:
+    active: dev
+  main:
+    banner-mode: off
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: false
+
+logging:
+  file:
+    name: logs/app.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    root: INFO
+    org.springframework: INFO
+    org.hibernate.SQL: INFO
+    com.chatbotcal: INFO
 
 openai:
   api-url: https://api.openai.com/v1/chat/completions
-  api-key: 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
-
 
 telegram:
   api-url: https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s
-  bot-token: 7783298260:AAE9HKfvcocQOQrwL1QM7HVMeXX_Mm5tGcI
+
+google:
+  redirect-uri: http://localhost:8080/auth/callback
+
 
