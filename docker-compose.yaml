@@ -49,21 +49,49 @@ services:
     container_name: chatbot-app-gateway
     depends_on:
       - redpanda
-      - mysql
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_TOPIC: telegram-messages
-      TELEGRAM_TOKEN: 7783298260:AAE9HKfvcocQOQrwL1QM7HVMeXX_Mm5tGcI
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      TIME_ZONE: Asia/Jerusalem
     networks:
       - appnet
     ports:
       - "5000:5000"
 
+#  service:
+#    build:
+#      context: ./chatbot-calendar-service
+#      dockerfile: Dockerfile
+#    container_name: chatbot-calendar-service
+#    depends_on:
+#      - redpanda
+#      - mysql
+#    environment:
+#      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+#      KAFKA_TOPIC: telegram-messages
+#      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+#
+#      # OpenAI
+#      OPENAI_API_URL: ${OPENAI_API_URL}
+#      OPENAI_API_KEY: ${OPENAI_API_KEY}
+#
+#      # Telegram API
+#      TELEGRAM_API_URL: ${TELEGRAM_API_URL}
+#
+#      # Google OAuth
+#      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+#
+#      SPRING_PROFILES_ACTIVE: prod
+#    networks:
+#      - appnet
+#    ports:
+#      - "8080:8080"
+
 
 networks:
   appnet:
     driver: bridge
-
 
 
 volumes:

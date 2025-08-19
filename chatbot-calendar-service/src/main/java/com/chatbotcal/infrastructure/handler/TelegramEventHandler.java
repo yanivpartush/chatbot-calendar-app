@@ -18,11 +18,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import static com.chatbotcal.service.google.CalendarEventDataBuilder.calendarEventData;
+import static com.chatbotcal.service.google.CalendarEventDataBuilder.extractCalendarEventData;
 
 @Service
 @RequiredArgsConstructor
-public class TelegramEventHandler  {
+public class TelegramEventHandler {
 
     private final UserMessageService userMessageService;
     private final UserService userService;
@@ -34,7 +34,6 @@ public class TelegramEventHandler  {
 
     private static final Logger logger = LoggerFactory.getLogger(TelegramEventHandler.class);
 
-
     public void on(TelegramEvent telegramEvent) {
 
         User user = userService.getOrCreateUser(
@@ -44,21 +43,20 @@ public class TelegramEventHandler  {
                 telegramEvent.getUsername(),
                 telegramEvent.getTimeZone());
 
+        UserMessage message =
+                userMessageService.saveUserMessage(user, telegramEvent.getText(), MessageStatus.RECEIVED);
+
         googleAuthService.getUserCredential(user.getId()).ifPresentOrElse(
-                ( credential ) -> {
-                    UserMessage message =
-                            userMessageService.saveUserMessage(user, telegramEvent.getText(),
-                                                               MessageStatus.RECEIVED);
+                (credential) -> {
                     try {
                         userMessageService.updateStatus(message.getId(), MessageStatus.IN_PROGRESS);
                         String telegramJson =
-                                calendarPromptAIService.getCalendarEventFromPrompt(telegramEvent.getText());
-                        CalendarEventData calendarEventData = calendarEventData(telegramJson);
-                        Event createdEvent = calendarMeetingCreator.createEvent(calendarEventData,user.getTimeZone());
+                                calendarPromptAIService.getCalendarEventFromPrompt(telegramEvent.getText(), user.getTimeZone());
+                        CalendarEventData calendarEventData = extractCalendarEventData(telegramJson);
+                        Event createdEvent = calendarMeetingCreator.createEvent(calendarEventData, user.getTimeZone());
                         createdEvent = calendarService.createEvent(credential, createdEvent);
-                        logger.info(String.format("Event created in Google Calendar : %s", createdEvent.getHtmlLink()));
                         userMessageService.updateStatus(message.getId(), MessageStatus.SUCCESS);
-                        logger.info("Message processed successfully: messageId={}, userId={}",
+                        logger.info("Message processed successfully : messageId={}, userId={}",
                                     message.getId(), user.getId());
                         notificationService.notifyUserOnEventCreation(telegramEvent, createdEvent);
 

@@ -18,6 +18,8 @@ public class CalendarService {
     private static final String APPLICATION_NAME = "Chatbot calendar";
     public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
+    private static final Logger logger = LoggerFactory.getLogger(CalendarService.class);
+
 
     private Calendar buildClient(Credential credential) throws Exception {
         return new Calendar.Builder(
@@ -31,7 +33,9 @@ public class CalendarService {
 
     public Event createEvent(Credential credential, Event event) throws Exception {
         Calendar client = buildClient(credential);
-        return client.events().insert("primary", event).execute();
+        Event createdEvent = client.events().insert("primary", event).execute();
+        logger.info(String.format("Event created in Google Calendar : %s", createdEvent.getHtmlLink()));
+        return createdEvent;
     }
 
 

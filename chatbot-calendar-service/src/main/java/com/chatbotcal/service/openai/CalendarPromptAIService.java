@@ -15,10 +15,10 @@ public class CalendarPromptAIService {
     @Value("${openai.api-url}")
     private String apiUrl;
 
-    public String getCalendarEventFromPrompt(String prompt) throws Exception {
+    public String getCalendarEventFromPrompt(String prompt, String timeZone) throws Exception {
         OkHttpClient client = new OkHttpClient();
 
-        String jsonBody = JsonTemplateUtil.loadTemplate("gpt-request-template.json", prompt);
+        String jsonBody = JsonTemplateUtil.loadTemplateWithPromptAndTimezone("gpt-request-template.json", prompt, timeZone);
 
         Request request = new Request.Builder()
                 .url(apiUrl)

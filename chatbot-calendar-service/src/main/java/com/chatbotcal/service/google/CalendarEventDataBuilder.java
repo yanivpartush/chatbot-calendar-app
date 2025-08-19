@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public class CalendarEventDataBuilder {
 
-    public static CalendarEventData calendarEventData(String openaiResponse) throws Exception {
+    public static CalendarEventData extractCalendarEventData(String openaiResponse) throws Exception {
 
         JsonNode meetingDetailsJson = GPTJsonExtractor.extractInnerJson(openaiResponse);
 
@@ -20,7 +20,7 @@ public class CalendarEventDataBuilder {
         String time = meetingDetailsJson.get("time").asText();
 
         String location = Optional.ofNullable(meetingDetailsJson.get("location"))
-                .map(jsonNode -> jsonNode.asText())
+                .map(JsonNode::asText)
                 .orElse("");
 
         List<String> participants = new ArrayList<>();
@@ -29,6 +29,9 @@ public class CalendarEventDataBuilder {
                 participants.add(participantNode.asText());
             }
         }
+
+
+
 
         String startDateTime = String.format("%sT%s:00", date, time);
         String endDateTime = String.format("%sT%s:00", date, LocalTime.parse(time).plusMinutes(60));
@@ -39,6 +42,7 @@ public class CalendarEventDataBuilder {
                 .participants(participants)
                 .startDateTime(startDateTime)
                 .endDateTime(endDateTime)
+
                 .build();
     }
 }

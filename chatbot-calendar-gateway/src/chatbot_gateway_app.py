@@ -1,15 +1,10 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from confluent_kafka import Producer
-from datetime import datetime, timezone
 
 import os
 import json
 import logging
-import time
-
-
-
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
@@ -27,7 +22,6 @@ logger = logging.getLogger(__name__)
 producer = Producer({'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS})
 
 def delivery_report(err, msg):
-    """Called once for each message produced to indicate delivery result."""
     if err is not None:
         logger.error(f"Message delivery failed: {err}")
     else:
@@ -35,6 +29,7 @@ def delivery_report(err, msg):
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"RAW UPDATE: {update.to_dict()}")
+
     user_id = update.effective_user.id
     chat_id = update.effective_chat.id
     user_text = update.message.text
@@ -42,12 +37,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     first_name = update.effective_user.first_name
     last_name = update.effective_user.last_name
     username = update.effective_user.username
-    tz_name = time.tzname[time.daylight]
 
-    # 1. Immediate reply to user
+
+    tz_name = os.getenv("TIME_ZONE")
+    if not tz_name:
+        tz_name = "UTC"
+
+    logger.info(f"Time Zone = [{tz_name}]")
+
+    # Reply to user
     await context.bot.send_message(chat_id=chat_id, text="Message received! We'll process it soon.")
 
-    # 2. Push the message to Kafka (non-blocking)
+    # Push message to Kafka
     data = {
         "userId": user_id,
         "text": user_text,
@@ -57,17 +58,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "timeZone": tz_name
     }
 
-    # Serialize as string (or JSON)
-   
     producer.produce(KAFKA_TOPIC, json.dumps(data).encode('utf-8'), callback=delivery_report)
-    producer.flush(1)
-
-    # The bot does NOT do heavy work here, just queues the message
+    producer.poll(0)
 
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    #logger.info("Yaniv TEST !!!!!")
     logger.info("Bot is running...")
     app.run_polling()
 

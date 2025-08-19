@@ -8,6 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
 @Service
 public class CalendarMeetingCreator {
 
@@ -22,16 +26,22 @@ public class CalendarMeetingCreator {
 
         String description = "Created By Chatbot Calendar App";
         if (!eventData.getParticipants().isEmpty()) {
-            description += "\nParicipants: " + String.join(", ", eventData.getParticipants());
+            description += "\nParticipants: " + String.join(", ", eventData.getParticipants());
         }
         eventToCreate.setDescription(description);
 
-        DateTime startDateTime = new DateTime(eventData.getStartDateTime() + "+03:00" );
+        LocalDateTime localStart = LocalDateTime.parse(eventData.getStartDateTime());
+        ZonedDateTime zonedStart = localStart.atZone(ZoneId.of(timeZone));
+        DateTime startDateTime = new DateTime(zonedStart.toInstant().toEpochMilli());
+
         EventDateTime start = new EventDateTime()
                 .setDateTime(startDateTime)
                 .setTimeZone(timeZone);
 
-        DateTime endDateTime = new DateTime(eventData.getEndDateTime() + "+03:00" );
+        LocalDateTime localEnd = LocalDateTime.parse(eventData.getEndDateTime());
+        ZonedDateTime zonedEnd = localEnd.atZone(ZoneId.of(timeZone));
+        DateTime endDateTime = new DateTime(zonedEnd.toInstant().toEpochMilli());
+
         EventDateTime end = new EventDateTime()
                 .setDateTime(endDateTime)
                 .setTimeZone(timeZone);

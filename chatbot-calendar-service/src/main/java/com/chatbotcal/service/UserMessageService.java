@@ -16,7 +16,7 @@ public class UserMessageService {
 
     private final UserMessageRepository userMessageRepository;
 
-    @Transactional
+
     public UserMessage saveUserMessage(User user, String textMessage, MessageStatus status) {
 
         UserMessage userMessage = UserMessage.builder()
@@ -28,7 +28,7 @@ public class UserMessageService {
         return userMessageRepository.save(userMessage);
     }
 
-    @Transactional
+
     public UserMessage updateStatus(Long messageId, MessageStatus newStatus) {
         UserMessage message = userMessageRepository.findById(messageId)
                                                    .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
@@ -46,6 +46,8 @@ public class UserMessageService {
         userMessageRepository.deleteById(id);
     }
 
-
+    public List<UserMessage> findMessagesByStatus(String state, MessageStatus received) {
+        return userMessageRepository.findByUserIdAndStatus(state, received);
+    }
 }
 

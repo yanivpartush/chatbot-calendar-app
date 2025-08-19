@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class JsonTemplateUtil {
@@ -21,7 +23,9 @@ public class JsonTemplateUtil {
         return new FileInputStream(path.toFile());
     }
 
-    public static String loadTemplate(String fileName, String prompt) throws IOException {
+    public static String loadTemplateWithPromptAndTimezone(String fileName,
+                                                           String prompt,
+                                                           String timeZone) throws IOException {
         InputStream in = loadExternalResource(fileName);
         if (in == null) {
             throw new FileNotFoundException("Template file not found: " + fileName);
@@ -32,7 +36,12 @@ public class JsonTemplateUtil {
             template = scanner.useDelimiter("\\A").next();
         }
 
-        return template.replace("{{prompt}}", escapeJson(prompt));
+        String now = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+
+        return template
+                .replace("{{prompt}}", escapeJson(prompt))
+                .replace("{{timeZone}}", escapeJson(timeZone))
+                .replace("{{now}}", escapeJson(now));
     }
 
     private static String escapeJson(String text) {
