@@ -42,4 +42,4 @@ telegram:
   bot-token: ${TELEGRAM_TOKEN}
 
 google:
-  redirect-uri: http://${APP_DOMAIN}/auth/callback
+  redirect-uri: https://${APP_DOMAIN}/auth/callback
