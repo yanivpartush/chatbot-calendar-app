@@ -2,6 +2,8 @@ package com.chatbotcal.infrastructure.producer;
 
 import com.chatbotcal.event.TelegramEvent;
 import com.chatbotcal.repository.entity.UserMessage;
+import com.chatbotcal.repository.enums.MessageStatus;
+import com.chatbotcal.service.UserMessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +23,11 @@ public class TelegramEventProducer {
 
     private final KafkaTemplate kafkaTemplate;
     private final ObjectMapper objectMapper;
+    private final UserMessageService userMessageService;
 
     @Value("${spring.kafka.topic.telegram-messages}")
     private String telegramTopic;
+
 
 
     public void produce(List<UserMessage> messages) {
@@ -33,6 +37,9 @@ public class TelegramEventProducer {
                 String jsonEvent = objectMapper.writeValueAsString(event);
                 logger.info("Sending message to Kafka: {}", jsonEvent);
                 kafkaTemplate.send(telegramTopic, jsonEvent);
+                userMessageService.updateStatus(receivedMessage.getId(), MessageStatus.RETRY);
+                logger.info("Message marked in RETRY Status : messageId={}, userId={}",
+                            receivedMessage.getId(), receivedMessage.getUser().getId());
             } catch (JsonProcessingException e) {
                 logger.error("Failed to republish telegram message to kafka ", e);
             }

@@ -10,7 +10,7 @@ spring:
   main:
     banner-mode: off
   jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database-platform: org.hibernate.dialect.MariaDBDialect
     show-sql: false
 
 logging:

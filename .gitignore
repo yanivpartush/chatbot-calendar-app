@@ -20,6 +20,12 @@ logs/
 *.ipr
 
 # =========================
+# Environment files
+# =========================
+.env
+*.env
+
+# =========================
 # Python (chatbot-calendar-gateway)
 # =========================
 chatbot-calendar-gateway/__pycache__/

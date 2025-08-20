@@ -29,16 +29,15 @@ services:
       - appnet
 
   mysql:
-    image: mysql:8.0
+    image: mariadb:10.11
     container_name: mysql
     environment:
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      #MYSQL_DATABASE: telegramUserDetails
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password
     networks:
       - appnet
 
@@ -46,6 +45,7 @@ services:
     build:
       context: ./chatbot-calendar-gateway
       dockerfile: Dockerfile
+    image: chatbot-app-gateway:latest
     container_name: chatbot-app-gateway
     depends_on:
       - redpanda
@@ -63,6 +63,7 @@ services:
     build:
       context: ./chatbot-calendar-service
       dockerfile: Dockerfile
+    image: chatbot-calendar-service:latest
     container_name: chatbot-calendar-service
     depends_on:
       - redpanda

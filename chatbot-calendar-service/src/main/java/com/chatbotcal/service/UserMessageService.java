@@ -28,7 +28,7 @@ public class UserMessageService {
         return userMessageRepository.save(userMessage);
     }
 
-
+    @Transactional
     public UserMessage updateStatus(Long messageId, MessageStatus newStatus) {
         UserMessage message = userMessageRepository.findById(messageId)
                                                    .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));

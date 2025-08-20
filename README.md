@@ -43,7 +43,10 @@ SELECT * FROM telegramUserDetails.user_tokens;
 SELECT * FROM telegramUserDetails.user_messages;
 
 ```
+## Telegram Bot
 
+```
 
+Click here for bot -> https://t.me/yaniv_calendar_bot
 
-
+```
