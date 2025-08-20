@@ -1,8 +1,14 @@
 server:
   address: 0.0.0.0
-  port: 8080
+  port: 8443
   tomcat:
     apr: false
+  ssl:
+    enabled: true
+    key-store: file:chatbot-calendar-service/config/keystore.p12
+    key-store-password: techbankRootPsw
+    key-store-type: PKCS12
+    key-alias: myapp
 
 spring:
   profiles:
@@ -31,6 +37,6 @@ telegram:
   api-url: https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s
 
 google:
-  redirect-uri: http://localhost:8080/auth/callback
+  redirect-uri: https://localhost:8443/auth/callback
 
 
