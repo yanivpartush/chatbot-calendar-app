@@ -1,8 +1,8 @@
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/telegramUserDetails?createDatabaseIfNotExist=true
-    username: root
-    password: techbankRootPsw
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: create
@@ -27,8 +27,8 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 openai:
-  api-key: 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
+  api-key: ${OPENAI_API_KEY}
 
 telegram:
-  bot-token: 7783298260:AAE9HKfvcocQOQrwL1QM7HVMeXX_Mm5tGcI
+  bot-token: ${TELEGRAM_TOKEN}
 

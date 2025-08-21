@@ -6,7 +6,7 @@ server:
   ssl:
     enabled: true
     key-store: file:chatbot-calendar-service/config/keystore.p12
-    key-store-password: techbankRootPsw
+    key-store-password: ${KEY_STORE_PASSWORD}
     key-store-type: PKCS12
     key-alias: myapp
 

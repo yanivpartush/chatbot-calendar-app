@@ -68,6 +68,7 @@ services:
     depends_on:
       - redpanda
       - mysql
+      - gateway
     environment:
       # Kafka
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092

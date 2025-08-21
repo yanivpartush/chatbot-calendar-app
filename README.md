@@ -5,6 +5,13 @@
 ```
 1. --spring.config.location=file:${CONFIG_DIR}/application.yaml --logging.config=file:${CONFIG_DIR}/logback-spring.xml
 
+2. Need to define env vars : 
+    - DB_USERNAME
+    - DB_PASSWORD
+    - OPENAI_API_KEY
+    - TELEGRAM_TOKEN
+    - KEY_STORE_PASSWORD
+
 ```
 
 ## chatbot-calendar-gateway

@@ -11,7 +11,7 @@ spring:
     database-platform: org.hibernate.dialect.MariaDBDialect
     show-sql: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
   kafka:
     topic:
       telegram-messages: ${KAFKA_TOPIC}
