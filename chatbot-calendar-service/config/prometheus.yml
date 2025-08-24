@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "chatbot_calendar_service_docker"
+    metrics_path: '/actuator/prometheus'
+    scheme: https
+    static_configs:
+      - targets: ["chatbot-calendar-service:8443"]
+    tls_config:
+      insecure_skip_verify: true
+
+  - job_name: "chatbot_calendar_service_local"
+    metrics_path: '/actuator/prometheus'
+    scheme: https
+    static_configs:
+      - targets: ["host.docker.internal:8443"]
+    tls_config:
+      insecure_skip_verify: true

@@ -30,6 +30,18 @@ logging:
     org.hibernate.SQL: INFO
     com.chatbotcal: INFO
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus"
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: chatbot-calendar-service
+
 openai:
   api-url: https://api.openai.com/v1/chat/completions
 
