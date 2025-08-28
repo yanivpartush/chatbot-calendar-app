@@ -57,3 +57,16 @@ SELECT * FROM telegramUserDetails.user_messages;
 Click here for bot -> https://t.me/yaniv_calendar_bot
 
 ```
+
+## Montioring Tools - Configuration
+
+```
+Link to check prometheus connection :
+
+http://localhost:9090/targets
+
+Link for Grafana dashboard :
+
+http://localhost:3000/
+
+```
