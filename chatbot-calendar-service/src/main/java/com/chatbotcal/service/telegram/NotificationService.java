@@ -49,7 +49,7 @@ public class NotificationService {
     }
 
     public void notifyUser(String userId, String messageText) {
-        //String userId = telegramEvent.getUserId();
+
 
         try {
             String urlString = String.format(

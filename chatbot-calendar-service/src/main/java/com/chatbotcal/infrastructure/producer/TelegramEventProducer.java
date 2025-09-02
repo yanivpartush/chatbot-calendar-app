@@ -45,26 +45,4 @@ public class TelegramEventProducer {
         this.errorCounter = registry.counter("telegram_events_send_errors_total");
     }
 
-    @Timed(value = "telegram_event_send_duration", description = "Time taken to send TelegramEvent")
-    @Counted(value = "telegram_event_send_total", description = "Number of TelegramEvents sent")
-    public void produce(List<UserMessage> messages) {
-        messages.forEach(receivedMessage -> {
-            try {
-                TelegramEvent event = TelegramEvent.fromUserMessage(receivedMessage);
-                String jsonEvent = objectMapper.writeValueAsString(event);
-
-                logger.info("Sending message to Kafka: {}", jsonEvent);
-                kafkaTemplate.send(telegramTopic, jsonEvent);
-                sentCounter.increment();
-
-                userMessageService.updateStatus(receivedMessage.getId(), MessageStatus.RETRY);
-                logger.info("Message marked in RETRY Status : messageId={}, userId={}",
-                            receivedMessage.getId(), receivedMessage.getUser().getId());
-            }
-            catch (Exception e) {
-                errorCounter.increment();
-                logger.error("Unexpected error while sending TelegramEvent", e);
-            }
-        });
-    }
 }

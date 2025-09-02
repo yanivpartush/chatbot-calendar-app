@@ -44,19 +44,16 @@ public class TelegramEventConsumer {
     public void consume(String message, Acknowledgment ack) {
         receivedCounter.increment();
         try {
-            logger.info("Received message from Kafka: {}", message);
-
-            try {
-                TelegramEvent event = objectMapper.readValue(message, TelegramEvent.class);
-                this.eventHandler.on(event);
-            } catch (Exception e) {
-                errorCounter.increment();
-                throw e;
-            }
-
-        } catch (Exception e) {
+            logger.info("Received message from Kafka");
+            TelegramEvent event = objectMapper.readValue(message, TelegramEvent.class);
+            event.dispatch(eventHandler);
+        }
+        catch (Exception e)
+        {
             logger.error("Error while processing message: ", e);
-        } finally {
+            errorCounter.increment();
+        }
+        finally {
             ack.acknowledge();
         }
     }

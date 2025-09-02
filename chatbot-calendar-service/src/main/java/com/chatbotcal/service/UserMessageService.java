@@ -1,5 +1,6 @@
 package com.chatbotcal.service;
 
+import com.chatbotcal.event.TelegramEvent;
 import com.chatbotcal.repository.UserMessageRepository;
 import com.chatbotcal.repository.entity.User;
 import com.chatbotcal.repository.entity.UserMessage;
@@ -8,7 +9,8 @@ import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +20,13 @@ import java.util.List;
 @Service
 public class UserMessageService {
 
-    private  UserMessageRepository userMessageRepository;
-    private  MeterRegistry meterRegistry;
+    private UserMessageRepository userMessageRepository;
+    private MeterRegistry meterRegistry;
 
+    private Counter messagesDeletedCounter;
+    private Counter messagesErrorCounter;
 
-    private  Counter messagesDeletedCounter;
-    private  Counter messagesErrorCounter;
+    private static final Logger logger = LoggerFactory.getLogger(UserMessageService.class);
 
     @Autowired
     public UserMessageService(UserMessageRepository userMessageRepository, MeterRegistry meterRegistry) {
@@ -39,22 +42,11 @@ public class UserMessageService {
                 .register(meterRegistry);
     }
 
-
     @Timed(value = "chatbot.messages.save.duration", description = "Time taken to save a message")
     @Counted(value = "chatbot.messages.save.count", description = "Number of calls to saveUserMessage")
-    public UserMessage saveUserMessage(User user, String textMessage, MessageStatus status) {
-        try {
-            UserMessage userMessage = UserMessage.builder()
-                    .user(user)
-                    .textMessage(textMessage)
-                    .status(status)
-                    .build();
-
-            return userMessageRepository.save(userMessage);
-        } catch (Exception e) {
-            messagesErrorCounter.increment();
-            throw e;
-        }
+    public UserMessage saveUserMessage(User user, TelegramEvent telegramEvent) {
+        UserMessage message = telegramEvent.toUserMessage(user, MessageStatus.RECEIVED);
+        return userMessageRepository.save(message);
     }
 
 
@@ -67,7 +59,6 @@ public class UserMessageService {
                     .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
 
             message.setStatus(newStatus);
-
 
             Counter.builder("chatbot.messages.status.updated")
                     .description("Number of messages updated by status")
@@ -82,7 +73,6 @@ public class UserMessageService {
         }
     }
 
-
     @Timed(value = "chatbot.messages.fetch.duration", description = "Time taken to fetch all messages")
     @Counted(value = "chatbot.messages.fetch.count", description = "Number of calls to getAllMessages")
     public List<UserMessage> getAllMessages() {
@@ -94,7 +84,6 @@ public class UserMessageService {
         }
     }
 
-
     @Counted(value = "chatbot.messages.delete.count", description = "Number of deleteMessage calls")
     public void deleteMessage(Long id) {
         try {
@@ -105,7 +94,6 @@ public class UserMessageService {
             throw e;
         }
     }
-
 
     @Timed(value = "chatbot.messages.fetch.duration", description = "Time taken to fetch messages by status")
     @Counted(value = "chatbot.messages.fetch.count", description = "Number of calls to findMessagesByStatus")

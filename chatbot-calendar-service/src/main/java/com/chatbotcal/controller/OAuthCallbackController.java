@@ -20,7 +20,7 @@ public class OAuthCallbackController {
     private final GoogleAuthService authService;
     private final NotificationService notificationService;
     private final UserMessageService userMessageService;
-    private final TelegramEventProducer telegramEventProducer;
+    // private final TelegramEventProducer telegramEventProducer;
 
 
     @GetMapping("/auth/callback")
@@ -29,11 +29,10 @@ public class OAuthCallbackController {
 
         List<UserMessage> receivedMessages = userMessageService.findMessagesByStatus(state, MessageStatus.RECEIVED);
 
-        String message =
-                String.format("Authorization successful for user %s. retrying your pending messages...", state);
+        String message = String.format("האימות הצליח עבור המשתמש %s. אנא נסה שוב...", state);
         notificationService.notifyUser(state, message);
 
-        telegramEventProducer.produce(receivedMessages);
+        //telegramEventProducer.produce(receivedMessages);
 
         return "Authorization successful for user " + state;
     }

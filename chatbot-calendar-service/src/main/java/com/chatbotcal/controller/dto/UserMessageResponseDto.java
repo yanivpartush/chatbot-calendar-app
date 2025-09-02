@@ -21,7 +21,7 @@ public class UserMessageResponseDto {
         return UserMessageResponseDto.builder()
                 .id(entity.getId())
                 .userId(entity.getUser().getId())
-                .textMessage(entity.getTextMessage())
+                .textMessage(entity.getMessageText())
                 .status(entity.getStatus())
                 .build();
     }

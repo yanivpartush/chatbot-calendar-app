@@ -21,9 +21,14 @@ public class UserMessage {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "text_message", nullable = false, length = 1000)
-    private String textMessage;
+    @Column(name = "message_text", length = 1000)
+    private String messageText;
 
+    @Column(name = "voice_file_id")
+    private String voiceFileId;
+
+    @Column(name = "voice_duration")
+    private Integer voiceDuration;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
