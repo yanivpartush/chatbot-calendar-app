@@ -1,6 +1,6 @@
 package com.chatbotcal.controller;
 
-import com.chatbotcal.infrastructure.producer.TelegramEventProducer;
+
 import com.chatbotcal.repository.entity.UserMessage;
 import com.chatbotcal.repository.enums.MessageStatus;
 import com.chatbotcal.service.UserMessageService;
@@ -19,21 +19,13 @@ public class OAuthCallbackController {
 
     private final GoogleAuthService authService;
     private final NotificationService notificationService;
-    private final UserMessageService userMessageService;
-    // private final TelegramEventProducer telegramEventProducer;
+
 
 
     @GetMapping("/auth/callback")
     public String callback(@RequestParam String code, @RequestParam String state) throws Exception {
         authService.exchangeCode(state, code);
-
-        List<UserMessage> receivedMessages = userMessageService.findMessagesByStatus(state, MessageStatus.RECEIVED);
-
-        String message = String.format("האימות הצליח עבור המשתמש %s. אנא נסה שוב...", state);
-        notificationService.notifyUser(state, message);
-
-        //telegramEventProducer.produce(receivedMessages);
-
+        notificationService.notifyUserOnSuccessfulAuthorization(state);
         return "Authorization successful for user " + state;
     }
 

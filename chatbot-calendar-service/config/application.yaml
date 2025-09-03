@@ -42,13 +42,13 @@ management:
     tags:
       application: chatbot-calendar-service
 
-openai:
-  api-url: https://api.openai.com/v1/chat/completions
-
 telegram:
   api-url: https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s
 
 google:
   redirect-uri: https://localhost:8443/auth/callback
+
+app:
+  default-language: he
 
 

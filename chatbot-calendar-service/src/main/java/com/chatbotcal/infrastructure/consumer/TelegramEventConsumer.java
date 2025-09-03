@@ -50,7 +50,7 @@ public class TelegramEventConsumer {
         }
         catch (Exception e)
         {
-            logger.error("Error while processing message: ", e);
+            logger.error("Error while processing message : {}", e);
             errorCounter.increment();
         }
         finally {

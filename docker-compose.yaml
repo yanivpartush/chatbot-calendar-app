@@ -104,9 +104,11 @@ services:
 #      SPRING_PROFILES_ACTIVE: prod
 #
 #      # DB / App
+#      SYSTEM_LANGUAGE: ${SYSTEM_LANGUAGE}
 #      DB_USERNAME: ${DB_USERNAME}
 #      DB_PASSWORD: ${DB_PASSWORD}
 #      APP_DOMAIN: ${APP_DOMAIN}
+
 #
 #      # KeyStore - SSL
 #      KEY_STORE_PASSWORD: ${KEY_STORE_PASSWORD}

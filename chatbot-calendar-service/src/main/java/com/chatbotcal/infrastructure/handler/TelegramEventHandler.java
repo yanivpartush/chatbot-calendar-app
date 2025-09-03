@@ -7,14 +7,19 @@ import com.chatbotcal.event.VoiceEvent;
 import com.chatbotcal.repository.entity.User;
 import com.chatbotcal.repository.entity.UserMessage;
 import com.chatbotcal.repository.enums.MessageStatus;
+import com.chatbotcal.repository.enums.UserIntent;
 import com.chatbotcal.service.UserMessageService;
 import com.chatbotcal.service.UserService;
 import com.chatbotcal.service.google.CalendarMeetingCreator;
 import com.chatbotcal.service.google.CalendarService;
 import com.chatbotcal.service.google.GoogleAuthService;
 import com.chatbotcal.service.openai.CalendarPromptAIService;
+import com.chatbotcal.service.openai.IntentClassificationService;
 import com.chatbotcal.service.openai.VoiceToTextConvertor;
+import com.chatbotcal.service.telegram.NotificationMessageService;
 import com.chatbotcal.service.telegram.NotificationService;
+import com.chatbotcal.service.tinyurl.TinyUrlService;
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.services.calendar.model.Event;
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
@@ -41,6 +46,9 @@ public class TelegramEventHandler {
     private final CalendarService calendarService;
     private final MeterRegistry meterRegistry;
     private final VoiceToTextConvertor voiceToTextConvertor;
+    private final IntentClassificationService intentClassificationService;
+    private final NotificationMessageService notificationMessageService;
+    private final TinyUrlService tinyUrlService;
 
     private static final Logger logger = LoggerFactory.getLogger(TelegramEventHandler.class);
 
@@ -56,7 +64,9 @@ public class TelegramEventHandler {
                                 NotificationService notificationService,
                                 GoogleAuthService googleAuthService,
                                 CalendarService calendarService,
-                                MeterRegistry meterRegistry, VoiceToTextConvertor voiceToTextConvertor) {
+                                MeterRegistry meterRegistry, VoiceToTextConvertor voiceToTextConvertor,
+                                IntentClassificationService intentClassificationService,
+                                NotificationMessageService notificationMessageService, TinyUrlService tinyUrlService) {
         this.userMessageService = userMessageService;
         this.userService = userService;
         this.calendarPromptAIService = calendarPromptAIService;
@@ -67,12 +77,12 @@ public class TelegramEventHandler {
         this.meterRegistry = meterRegistry;
 
         this.successCounter = Counter.builder("telegram.events.status")
-                .description("Number of successful processed messages")
+                .description("Number of successful processed messages.properties")
                 .tag("status", "SUCCESS")
                 .register(meterRegistry);
 
         this.failedCounter = Counter.builder("telegram.events.status")
-                .description("Number of failed processed messages")
+                .description("Number of failed processed messages.properties")
                 .tag("status", "FAILED")
                 .register(meterRegistry);
 
@@ -81,6 +91,9 @@ public class TelegramEventHandler {
                 .tag("status", "UNAUTHORIZED")
                 .register(meterRegistry);
         this.voiceToTextConvertor = voiceToTextConvertor;
+        this.intentClassificationService = intentClassificationService;
+        this.notificationMessageService = notificationMessageService;
+        this.tinyUrlService = tinyUrlService;
     }
 
     public void on(VoiceEvent voiceEvent) {
@@ -88,70 +101,89 @@ public class TelegramEventHandler {
             String transcript = voiceToTextConvertor.convertBase64VoiceToText(voiceEvent);
             logger.info("voice message transcript : {}", transcript);
             voiceEvent.setTranscript(transcript);
-            UserMessage message = saveUserAndMessage(voiceEvent);
-            processMessage(voiceEvent, message);
-
+            UserIntent userIntent = intentClassificationService.classifyMessage(transcript);
+            UserMessage message = saveUserAndMessage(voiceEvent, userIntent);
+            dispatch(voiceEvent, message);
         } catch (IOException e) {
-            logger.info("Failed to convert voice message to text -> {}", e);
-            notificationService.notifyUser(
-                    voiceEvent.getUserId(), "Failed to process your voice message. Please try again.");
+            logger.error("Failed to convert voice message to text -> {}", e);
+            notificationService.notifyUserOnVoiceError(voiceEvent.getUserId());
         }
     }
 
     @Timed(value = "telegram.events.processing.duration", description = "Time taken to process TelegramEvent")
     @Counted(value = "telegram.events.processing.count", description = "Number of TelegramEvent processed")
-    public void on(TextEvent textEvent) {
-        UserMessage message = saveUserAndMessage(textEvent);
-        processMessage(textEvent, message);
+    public void on(TextEvent textEvent) throws IOException {
+        UserIntent userIntent = intentClassificationService.classifyMessage(textEvent.getText());
+        UserMessage message = saveUserAndMessage(textEvent, userIntent);
+        dispatch(textEvent, message);
     }
 
-    private void processMessage(TelegramEvent telegramEvent, UserMessage message) {
+    public void dispatch(TelegramEvent telegramEvent, UserMessage message) {
         googleAuthService.getUserCredential(message.getUser().getId()).ifPresentOrElse(
                 (credential) -> {
                     try {
-                        userMessageService.updateStatus(message.getId(), MessageStatus.IN_PROGRESS);
-
-                        String telegramJson =
-                                calendarPromptAIService.getCalendarEventFromPrompt(telegramEvent.getText(),
-                                                                                   telegramEvent.getTimeZone());
-                        CalendarEventData calendarEventData = extractCalendarEventData(telegramJson);
-
-                        Event createdEvent =
-                                calendarMeetingCreator.createEvent(calendarEventData, telegramEvent.getTimeZone());
-                        createdEvent = calendarService.createEvent(credential, createdEvent);
-
-                        userMessageService.updateStatus(message.getId(), MessageStatus.SUCCESS);
-                        successCounter.increment();
-
-                        logger.info("Message processed successfully : messageId={}, userId={}",
-                                    message.getId(), telegramEvent.getUserId());
-                        notificationService.notifyUserOnEventCreation(telegramEvent, createdEvent);
-
+                        switch (message.getUserIntent()) {
+                            case SCHEDULE_MEETING -> scheduleMeeting(credential, telegramEvent, message);
+                            //case GET_WEEKLY_SCHEDULE -> calendarService.showWeeklySchedule(message.getUser());
+                            //case CHECK_AVAILABILITY -> calendarService.checkAvailability(message.getUser());
+                            case UNKNOWN -> handleUnknown(telegramEvent);
+                        }
                     } catch (Exception e) {
-                        userMessageService.updateStatus(message.getId(), MessageStatus.FAILED);
-                        failedCounter.increment();
-
-                        logger.error("Failed to process messageId={}, userId={}, error={}",
-                                     message.getId(), telegramEvent.getUserId(), e.getMessage(), e);
-                        notificationService.notifyUserOnFailure(telegramEvent);
+                        handleFailure(telegramEvent, message, e);
                     }
                 }, () -> {
-                    unauthorizedCounter.increment();
-                    logger.info("User {} is not authorized, sending authorization link", telegramEvent.getUserId());
-                    notificationService.notifyUserOnAuthorizationRequired(
-                            telegramEvent, googleAuthService.getAuthUrl(telegramEvent.getUserId()));
+                    handleUnauthorizedUser(telegramEvent, message);
                 }
-
         );
     }
 
-    private UserMessage saveUserAndMessage(TelegramEvent telegramEvent) {
+    private void handleUnknown(TelegramEvent telegramEvent) {
+        logger.info("Could not understand intent of user {}. Message: '{}'",
+                    telegramEvent.getUserId(),
+                    telegramEvent.getText());
+        notificationService.notifyUserOnUnknownIntent(telegramEvent);
+    }
+
+    private void handleUnauthorizedUser(TelegramEvent telegramEvent, UserMessage message) {
+        unauthorizedCounter.increment();
+        String authUrl = googleAuthService.getAuthUrl(message.getUser().getId());
+        authUrl = tinyUrlService.shorten(authUrl);
+        logger.info("User {} is not authorized, sending authorization link {}", message.getUser().getId(), authUrl);
+        notificationService.notifyUserOnAuthorizationRequired(telegramEvent, authUrl);
+    }
+
+    private void handleFailure(TelegramEvent telegramEvent, UserMessage message, Exception e) {
+        userMessageService.updateStatus(message.getId(), MessageStatus.FAILED);
+        failedCounter.increment();
+
+        logger.error("Failed to process messageId={}, userId={}, error={}",
+                     message.getId(), telegramEvent.getUserId(), e.getMessage(), e);
+        notificationService.notifyUserOnFailure(telegramEvent);
+    }
+
+    private void scheduleMeeting(Credential credential, TelegramEvent telegramEvent, UserMessage message) throws
+            Exception {
+        userMessageService.updateStatus(message.getId(), MessageStatus.IN_PROGRESS);
+        String meetingDetailsJson = calendarPromptAIService.getCalendarEventFromPrompt(telegramEvent.getText(),
+                                                                                       telegramEvent.getTimeZone());
+        CalendarEventData calendarEventData = extractCalendarEventData(meetingDetailsJson);
+        Event createdEvent =
+                calendarMeetingCreator.createEvent(calendarEventData, telegramEvent.getTimeZone());
+        createdEvent = calendarService.createEvent(credential, createdEvent);
+        userMessageService.updateStatus(message.getId(), MessageStatus.SUCCESS);
+        successCounter.increment();
+        logger.info("Message processed successfully : messageId={}, userId={}", message.getId(),
+                    telegramEvent.getUserId());
+        notificationService.notifyUserOnEventCreation(telegramEvent, createdEvent);
+    }
+
+    private UserMessage saveUserAndMessage(TelegramEvent telegramEvent, UserIntent userIntent) {
         User user = userService.getOrCreateUser(
                 telegramEvent.getUserId(),
                 telegramEvent.getFirstName(),
                 telegramEvent.getLastName(),
                 telegramEvent.getUsername(),
                 telegramEvent.getTimeZone());
-        return userMessageService.saveUserMessage(user, telegramEvent);
+        return userMessageService.saveUserMessage(user, telegramEvent, userIntent);
     }
 }

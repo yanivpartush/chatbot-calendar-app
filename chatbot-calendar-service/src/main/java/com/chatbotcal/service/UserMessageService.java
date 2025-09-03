@@ -5,6 +5,7 @@ import com.chatbotcal.repository.UserMessageRepository;
 import com.chatbotcal.repository.entity.User;
 import com.chatbotcal.repository.entity.UserMessage;
 import com.chatbotcal.repository.enums.MessageStatus;
+import com.chatbotcal.repository.enums.UserIntent;
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
@@ -33,25 +34,26 @@ public class UserMessageService {
         this.userMessageRepository = userMessageRepository;
         this.meterRegistry = meterRegistry;
 
-        this.messagesDeletedCounter = Counter.builder("chatbot.messages.deleted")
-                .description("Number of messages deleted")
+        this.messagesDeletedCounter = Counter.builder("chatbot.messages.properties.deleted")
+                .description("Number of messages.properties deleted")
                 .register(meterRegistry);
 
-        this.messagesErrorCounter = Counter.builder("chatbot.messages.errors")
+        this.messagesErrorCounter = Counter.builder("chatbot.messages.properties.errors")
                 .description("Number of errors in UserMessageService")
                 .register(meterRegistry);
     }
 
-    @Timed(value = "chatbot.messages.save.duration", description = "Time taken to save a message")
-    @Counted(value = "chatbot.messages.save.count", description = "Number of calls to saveUserMessage")
-    public UserMessage saveUserMessage(User user, TelegramEvent telegramEvent) {
+    @Timed(value = "chatbot.messages.properties.save.duration", description = "Time taken to save a message")
+    @Counted(value = "chatbot.messages.properties.save.count", description = "Number of calls to saveUserMessage")
+    public UserMessage saveUserMessage(User user, TelegramEvent telegramEvent, UserIntent userIntent) {
         UserMessage message = telegramEvent.toUserMessage(user, MessageStatus.RECEIVED);
+        message.setUserIntent(userIntent);
         return userMessageRepository.save(message);
     }
 
 
-    @Timed(value = "chatbot.messages.update.duration", description = "Time taken to update message status")
-    @Counted(value = "chatbot.messages.update.count", description = "Number of calls to updateStatus")
+    @Timed(value = "chatbot.messages.properties.update.duration", description = "Time taken to update message status")
+    @Counted(value = "chatbot.messages.properties.update.count", description = "Number of calls to updateStatus")
     @Transactional
     public UserMessage updateStatus(Long messageId, MessageStatus newStatus) {
         try {
@@ -60,8 +62,8 @@ public class UserMessageService {
 
             message.setStatus(newStatus);
 
-            Counter.builder("chatbot.messages.status.updated")
-                    .description("Number of messages updated by status")
+            Counter.builder("chatbot.messages.properties.status.updated")
+                    .description("Number of messages.properties updated by status")
                     .tag("status", newStatus.name())
                     .register(meterRegistry)
                     .increment();
@@ -73,8 +75,8 @@ public class UserMessageService {
         }
     }
 
-    @Timed(value = "chatbot.messages.fetch.duration", description = "Time taken to fetch all messages")
-    @Counted(value = "chatbot.messages.fetch.count", description = "Number of calls to getAllMessages")
+    @Timed(value = "chatbot.messages.properties.fetch.duration", description = "Time taken to fetch all messages.properties")
+    @Counted(value = "chatbot.messages.properties.fetch.count", description = "Number of calls to getAllMessages")
     public List<UserMessage> getAllMessages() {
         try {
             return userMessageRepository.findAll();
@@ -84,7 +86,7 @@ public class UserMessageService {
         }
     }
 
-    @Counted(value = "chatbot.messages.delete.count", description = "Number of deleteMessage calls")
+    @Counted(value = "chatbot.messages.properties.delete.count", description = "Number of deleteMessage calls")
     public void deleteMessage(Long id) {
         try {
             userMessageRepository.deleteById(id);
@@ -95,8 +97,8 @@ public class UserMessageService {
         }
     }
 
-    @Timed(value = "chatbot.messages.fetch.duration", description = "Time taken to fetch messages by status")
-    @Counted(value = "chatbot.messages.fetch.count", description = "Number of calls to findMessagesByStatus")
+    @Timed(value = "chatbot.messages.properties.fetch.duration", description = "Time taken to fetch messages.properties by status")
+    @Counted(value = "chatbot.messages.properties.fetch.count", description = "Number of calls to findMessagesByStatus")
     public List<UserMessage> findMessagesByStatus(String userId, MessageStatus status) {
         try {
             return userMessageRepository.findByUserIdAndStatus(userId, status);

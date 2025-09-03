@@ -1,8 +1,8 @@
 package com.chatbotcal.service.google;
 
 import com.chatbotcal.event.CalendarEventData;
-import com.chatbotcal.util.GPTJsonExtractor;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -11,9 +11,11 @@ import java.util.Optional;
 
 public class CalendarEventDataBuilder {
 
+    private final static ObjectMapper mapper = new ObjectMapper();
+
     public static CalendarEventData extractCalendarEventData(String openaiResponse) throws Exception {
 
-        JsonNode meetingDetailsJson = GPTJsonExtractor.extractInnerJson(openaiResponse);
+        JsonNode meetingDetailsJson = mapper.readTree(openaiResponse);
 
         String title = meetingDetailsJson.get("title").asText();
         String date = meetingDetailsJson.get("date").asText();

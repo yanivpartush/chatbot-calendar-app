@@ -1,7 +1,9 @@
 package com.chatbotcal.service.telegram;
 
 import com.chatbotcal.event.TelegramEvent;
+import com.chatbotcal.service.tinyurl.TinyUrlService;
 import com.google.api.services.calendar.model.Event;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +15,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
 
     @Value("${telegram.bot-token}")
@@ -21,36 +24,42 @@ public class NotificationService {
     @Value("${telegram.api-url}")
     private String apiUrl;
 
+    private final NotificationMessageService notificationMessageService;
+    private final TinyUrlService tinyUrlService;
+
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     public void notifyUserOnFailure(TelegramEvent telegramEvent) {
-        String messageText = String.format(
-                "Your calendar event has been failed\n\nTitle: %s",
-                telegramEvent.getText()
-        );
+        String messageText = notificationMessageService.getMessage("event.schedule.error", telegramEvent.getText());
+        notifyUser(telegramEvent.getUserId(), messageText);
+    }
+
+    public void notifyUserOnUnknownIntent(TelegramEvent telegramEvent) {
+        String messageText = notificationMessageService.getMessage("intent.unknown", telegramEvent.getText());
         notifyUser(telegramEvent.getUserId(), messageText);
     }
 
     public void notifyUserOnAuthorizationRequired(TelegramEvent telegramEvent, String link) {
-        String messageText = String.format(
-                "Message was not processed, Click the link to connect your Google Calendar : %s",
-                link
-        );
+        String messageText = notificationMessageService.getMessage("calendar.connect", link);
         notifyUser(telegramEvent.getUserId(), messageText);
     }
 
     public void notifyUserOnEventCreation(TelegramEvent telegramEvent, Event createdEvent) {
-        String messageText = String.format(
-                "Your calendar event has been successfully created!\n\nTitle: %s\nView in Calendar: %s",
-                createdEvent.getSummary(),
-                createdEvent.getHtmlLink()
-        );
+        String messageText = notificationMessageService.getMessage("event.created", createdEvent.getSummary(),
+                                                                   tinyUrlService.shorten(createdEvent.getHtmlLink()));
         notifyUser(telegramEvent.getUserId(), messageText);
+    }
+    public void notifyUserOnSuccessfulAuthorization(String userId) {
+        String messageText = notificationMessageService.getMessage("auth.retry", userId);
+        notifyUser(userId, messageText);
+    }
+
+    public void notifyUserOnVoiceError(String userId) {
+        String messageText = notificationMessageService.getMessage("voice.error");
+        notifyUser(userId, messageText);
     }
 
     public void notifyUser(String userId, String messageText) {
-
-
         try {
             String urlString = String.format(
                     apiUrl,

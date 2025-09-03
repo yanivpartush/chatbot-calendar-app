@@ -43,3 +43,6 @@ telegram:
 
 google:
   redirect-uri: https://${APP_DOMAIN}/auth/callback
+
+app:
+  default-language: ${SYSTEM_LANGUAGE}

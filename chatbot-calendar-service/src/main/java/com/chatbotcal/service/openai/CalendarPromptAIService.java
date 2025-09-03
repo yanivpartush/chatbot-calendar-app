@@ -1,36 +1,39 @@
 package com.chatbotcal.service.openai;
 
 import com.chatbotcal.util.JsonTemplateUtil;
-import okhttp3.*;
-import org.springframework.beans.factory.annotation.Value;
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatCompletionResult;
+import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.ChatMessageRole;
+import com.theokanning.openai.service.OpenAiService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class CalendarPromptAIService {
 
-    @Value("${openai.api-key}")
-    private String apiKey;
+    private final OpenAiService openAiService;
 
-    @Value("${openai.api-url}")
-    private String apiUrl;
-
-    public String getCalendarEventFromPrompt(String prompt, String timeZone) throws Exception {
-        OkHttpClient client = new OkHttpClient();
-
+    public String getCalendarEventFromPrompt(String prompt, String timeZone) throws IOException {
         String jsonBody = JsonTemplateUtil.loadTemplateWithPromptAndTimezone("gpt-request-template.json", prompt, timeZone);
 
-        Request request = new Request.Builder()
-                .url(apiUrl)
-                .header("Authorization", "Bearer " + apiKey)
-                .header("Content-Type", "application/json")
-                .post(RequestBody.create(jsonBody, MediaType.get("application/json")))
+        ChatMessage userMessage = new ChatMessage(ChatMessageRole.USER.value(), jsonBody);
+
+
+        ChatCompletionRequest request = ChatCompletionRequest.builder()
+                .model("gpt-4o-mini")
+                .messages(List.of(userMessage))
+                .temperature(0.0)
                 .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-            return response.body().string();
-        }
+
+        ChatCompletionResult result = openAiService.createChatCompletion(request);
+
+        return result.getChoices().get(0).getMessage().getContent();
     }
 }
 

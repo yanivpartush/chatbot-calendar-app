@@ -1,6 +1,7 @@
 package com.chatbotcal.repository.entity;
 
 import com.chatbotcal.repository.enums.MessageStatus;
+import com.chatbotcal.repository.enums.UserIntent;
 import lombok.*;
 
 import javax.persistence.*;
@@ -33,6 +34,10 @@ public class UserMessage {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private MessageStatus status;
+
+    @Column(name = "user_intent")
+    @Enumerated(EnumType.STRING)
+    private UserIntent userIntent;
 
 }
 
