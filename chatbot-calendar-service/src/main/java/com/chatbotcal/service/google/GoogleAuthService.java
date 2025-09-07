@@ -59,6 +59,7 @@ public class GoogleAuthService {
         return flow.newAuthorizationUrl()
                 .setRedirectUri(redirectUri)
                 .setState(userId)
+                .set("prompt", "consent")
                 .build();
     }
 
@@ -66,15 +67,23 @@ public class GoogleAuthService {
         GoogleTokenResponse tokenResponse = flow.newTokenRequest(code)
                 .setRedirectUri(redirectUri)
                 .execute();
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
         Credential credential = flow.createAndStoreCredential(tokenResponse, user.getId());
 
+
+        String refreshToken = credential.getRefreshToken();
+        if (refreshToken == null) {
+            refreshToken = tokenResponse.getRefreshToken();
+        }
+
         UserToken userToken = UserToken.builder().user(user)
                 .accessToken(credential.getAccessToken())
-                .refreshToken(credential.getRefreshToken())
-                .expiryTime(credential.getExpirationTimeMilliseconds()).build();
+                .refreshToken(refreshToken)
+                .expiryTime(credential.getExpirationTimeMilliseconds())
+                .build();
 
         tokenRepository.save(userToken);
 
@@ -84,7 +93,7 @@ public class GoogleAuthService {
         return tokenRepository.findById(userId)
                 .map(token -> {
                     try {
-                        return new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
+                        Credential credential = new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
                                 .setTransport(GoogleNetHttpTransport.newTrustedTransport())
                                 .setJsonFactory(JSON_FACTORY)
                                 .setClientAuthentication(flow.getClientAuthentication())
@@ -93,6 +102,17 @@ public class GoogleAuthService {
                                 .setAccessToken(token.getAccessToken())
                                 .setRefreshToken(token.getRefreshToken())
                                 .setExpirationTimeMilliseconds(token.getExpiryTime());
+
+
+                        if (credential.getExpiresInSeconds() != null && credential.getExpiresInSeconds() <= 60) {
+                            credential.refreshToken();
+
+                            token.setAccessToken(credential.getAccessToken());
+                            token.setExpiryTime(credential.getExpirationTimeMilliseconds());
+                            tokenRepository.save(token);
+                        }
+
+                        return credential;
                     } catch (Exception e) {
                         throw new RuntimeException("Failed to build Credential for user " + userId, e);
                     }

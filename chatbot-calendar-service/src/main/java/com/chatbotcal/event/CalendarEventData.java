@@ -1,11 +1,13 @@
 package com.chatbotcal.event;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import java.util.List;
 
 @Data
 @Builder
+@AllArgsConstructor
 public class CalendarEventData {
 
     private String title;

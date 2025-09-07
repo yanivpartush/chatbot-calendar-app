@@ -16,7 +16,6 @@ import com.chatbotcal.service.google.GoogleAuthService;
 import com.chatbotcal.service.openai.CalendarPromptAIService;
 import com.chatbotcal.service.openai.IntentClassificationService;
 import com.chatbotcal.service.openai.VoiceToTextConvertor;
-import com.chatbotcal.service.telegram.NotificationMessageService;
 import com.chatbotcal.service.telegram.NotificationService;
 import com.chatbotcal.service.tinyurl.TinyUrlService;
 import com.google.api.client.auth.oauth2.Credential;
@@ -31,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 
 import static com.chatbotcal.service.google.CalendarEventDataBuilder.extractCalendarEventData;
 
@@ -47,7 +47,7 @@ public class TelegramEventHandler {
     private final MeterRegistry meterRegistry;
     private final VoiceToTextConvertor voiceToTextConvertor;
     private final IntentClassificationService intentClassificationService;
-    private final NotificationMessageService notificationMessageService;
+
     private final TinyUrlService tinyUrlService;
 
     private static final Logger logger = LoggerFactory.getLogger(TelegramEventHandler.class);
@@ -66,7 +66,7 @@ public class TelegramEventHandler {
                                 CalendarService calendarService,
                                 MeterRegistry meterRegistry, VoiceToTextConvertor voiceToTextConvertor,
                                 IntentClassificationService intentClassificationService,
-                                NotificationMessageService notificationMessageService, TinyUrlService tinyUrlService) {
+                                TinyUrlService tinyUrlService) {
         this.userMessageService = userMessageService;
         this.userService = userService;
         this.calendarPromptAIService = calendarPromptAIService;
@@ -92,7 +92,7 @@ public class TelegramEventHandler {
                 .register(meterRegistry);
         this.voiceToTextConvertor = voiceToTextConvertor;
         this.intentClassificationService = intentClassificationService;
-        this.notificationMessageService = notificationMessageService;
+
         this.tinyUrlService = tinyUrlService;
     }
 
@@ -112,10 +112,15 @@ public class TelegramEventHandler {
 
     @Timed(value = "telegram.events.processing.duration", description = "Time taken to process TelegramEvent")
     @Counted(value = "telegram.events.processing.count", description = "Number of TelegramEvent processed")
-    public void on(TextEvent textEvent) throws IOException {
-        UserIntent userIntent = intentClassificationService.classifyMessage(textEvent.getText());
-        UserMessage message = saveUserAndMessage(textEvent, userIntent);
-        dispatch(textEvent, message);
+    public void on(TextEvent textEvent) {
+        try {
+            UserIntent userIntent = intentClassificationService.classifyMessage(textEvent.getText());
+            UserMessage message = saveUserAndMessage(textEvent, userIntent);
+            dispatch(textEvent, message);
+        } catch (IOException e) {
+            logger.error("Failed to process text event message -> {}", e);
+            notificationService.notifyUserOnTextError(textEvent.getUserId());
+        }
     }
 
     public void dispatch(TelegramEvent telegramEvent, UserMessage message) {
@@ -124,25 +129,26 @@ public class TelegramEventHandler {
                     try {
                         switch (message.getUserIntent()) {
                             case SCHEDULE_MEETING -> scheduleMeeting(credential, telegramEvent, message);
-                            //case GET_WEEKLY_SCHEDULE -> calendarService.showWeeklySchedule(message.getUser());
-                            //case CHECK_AVAILABILITY -> calendarService.checkAvailability(message.getUser());
-                            case UNKNOWN -> handleUnknown(telegramEvent);
+                            case GET_WEEKLY_SCHEDULE -> showWeeklySchedule(credential, telegramEvent, message);
+                            case CHECK_AVAILABILITY -> checkAvailability(credential, telegramEvent, message);
+                            case UNKNOWN -> handleUnknown(telegramEvent, message);
                         }
                     } catch (Exception e) {
                         handleFailure(telegramEvent, message, e);
                     }
-                }, () -> {
-                    handleUnauthorizedUser(telegramEvent, message);
-                }
+                }, () -> handleUnauthorizedUser(telegramEvent, message)
         );
     }
 
-    private void handleUnknown(TelegramEvent telegramEvent) {
+    private void handleUnknown(TelegramEvent telegramEvent, UserMessage message) {
+        userMessageService.updateStatus(message.getId(), MessageStatus.UNKNOWN_USER_INTENT);
         logger.info("Could not understand intent of user {}. Message: '{}'",
                     telegramEvent.getUserId(),
                     telegramEvent.getText());
         notificationService.notifyUserOnUnknownIntent(telegramEvent);
     }
+
+
 
     private void handleUnauthorizedUser(TelegramEvent telegramEvent, UserMessage message) {
         unauthorizedCounter.increment();
@@ -155,17 +161,47 @@ public class TelegramEventHandler {
     private void handleFailure(TelegramEvent telegramEvent, UserMessage message, Exception e) {
         userMessageService.updateStatus(message.getId(), MessageStatus.FAILED);
         failedCounter.increment();
-
-        logger.error("Failed to process messageId={}, userId={}, error={}",
+        logger.error("Failed to process Message={}, userId={}, error={}",
                      message.getId(), telegramEvent.getUserId(), e.getMessage(), e);
         notificationService.notifyUserOnFailure(telegramEvent);
+    }
+
+    private void checkAvailability(Credential credential, TelegramEvent telegramEvent, UserMessage message) throws
+            Exception {
+        userMessageService.updateStatus(message.getId(), MessageStatus.IN_PROGRESS);
+        List<CalendarEventData> futureEvents =
+                calendarService.getEventsForNextWeek(credential, telegramEvent.getTimeZone());
+        String response = calendarPromptAIService.executeCheckAvailabilityPrompt(telegramEvent.getText(),
+                                                                          telegramEvent.getTimeZone(),
+                                                                          futureEvents);
+        userMessageService.updateStatus(message.getId(), MessageStatus.SUCCESS);
+        successCounter.increment();
+        logger.info("Message processed successfully : messageId={}, userId={}", message.getId(),
+                    telegramEvent.getUserId());
+        notificationService.notifyUserOnCheckAvailability(telegramEvent, response);
+    }
+
+    private void showWeeklySchedule(Credential credential, TelegramEvent telegramEvent, UserMessage message) throws
+            Exception {
+        userMessageService.updateStatus(message.getId(), MessageStatus.IN_PROGRESS);
+        List<CalendarEventData> futureEvents =
+                calendarService.getEventsForNextWeek(credential, telegramEvent.getTimeZone());
+        String response =
+                calendarPromptAIService.executeFutureEventPrompt(telegramEvent.getText(), telegramEvent.getTimeZone(),
+                                                                 futureEvents);
+        userMessageService.updateStatus(message.getId(), MessageStatus.SUCCESS);
+        successCounter.increment();
+        logger.info("Message processed successfully : messageId={}, userId={}", message.getId(),
+                    telegramEvent.getUserId());
+        notificationService.notifyUserOnFutureEvents(telegramEvent, response);
+
     }
 
     private void scheduleMeeting(Credential credential, TelegramEvent telegramEvent, UserMessage message) throws
             Exception {
         userMessageService.updateStatus(message.getId(), MessageStatus.IN_PROGRESS);
-        String meetingDetailsJson = calendarPromptAIService.getCalendarEventFromPrompt(telegramEvent.getText(),
-                                                                                       telegramEvent.getTimeZone());
+        String meetingDetailsJson = calendarPromptAIService.buildCalendarEventPrompt(telegramEvent.getText(),
+                                                                                     telegramEvent.getTimeZone());
         CalendarEventData calendarEventData = extractCalendarEventData(meetingDetailsJson);
         Event createdEvent =
                 calendarMeetingCreator.createEvent(calendarEventData, telegramEvent.getTimeZone());
@@ -176,6 +212,7 @@ public class TelegramEventHandler {
                     telegramEvent.getUserId());
         notificationService.notifyUserOnEventCreation(telegramEvent, createdEvent);
     }
+
 
     private UserMessage saveUserAndMessage(TelegramEvent telegramEvent, UserIntent userIntent) {
         User user = userService.getOrCreateUser(

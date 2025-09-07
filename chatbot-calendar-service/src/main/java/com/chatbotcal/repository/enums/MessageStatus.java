@@ -4,5 +4,6 @@ public enum MessageStatus {
     RECEIVED,
     IN_PROGRESS,
     SUCCESS,
-    FAILED
+    FAILED,
+    UNKNOWN_USER_INTENT
 }

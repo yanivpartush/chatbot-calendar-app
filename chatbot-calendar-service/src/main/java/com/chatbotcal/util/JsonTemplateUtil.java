@@ -23,9 +23,20 @@ public class JsonTemplateUtil {
         return new FileInputStream(path.toFile());
     }
 
-    public static String loadTemplateWithPromptAndTimezone(String fileName,
-                                                           String prompt,
-                                                           String timeZone) throws IOException {
+    public static String loadTemplateWithPrompt(
+            String fileName,
+            String prompt,
+            String timeZone
+    ) throws IOException {
+        return loadTemplateWithPrompt(fileName, prompt, timeZone, "[]");
+    }
+
+    public static String loadTemplateWithPrompt(
+            String fileName,
+            String prompt,
+            String timeZone,
+            String eventsJson
+    ) throws IOException {
         InputStream in = loadExternalResource(fileName);
         if (in == null) {
             throw new FileNotFoundException("Template file not found: " + fileName);
@@ -41,7 +52,8 @@ public class JsonTemplateUtil {
         return template
                 .replace("{{prompt}}", escapeJson(prompt))
                 .replace("{{timeZone}}", escapeJson(timeZone))
-                .replace("{{now}}", escapeJson(now));
+                .replace("{{now}}", escapeJson(now))
+                .replace("{{events}}", (eventsJson == null || eventsJson.isBlank()) ? "[]" : eventsJson);
     }
 
     private static String escapeJson(String text) {

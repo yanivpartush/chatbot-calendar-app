@@ -1,0 +1,14 @@
+{
+  "model": "gpt-4-1106-preview",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Convert a text message into a JSON object of a calendar meeting. The output must be valid JSON only, with no extra text or comments. Required fields: title, date (YYYY-MM-DD), time (HH:mm), location (empty string if none), participants (empty list if none). If the text includes relative words like 'tomorrow', 'the day after tomorrow', 'Monday', etc., calculate the exact date based on the local time provided in the timeZone parameter and the currentTimestamp. **Do not return example dates – always convert relative words into the correct date**. Never return null values – always use an empty string or an empty list."
+    },
+    {
+      "role": "user",
+      "content": "timeZone={{timeZone}}; currentTimestamp={{now}}; text={{prompt}}"
+    }
+  ],
+  "temperature": 0.1
+}

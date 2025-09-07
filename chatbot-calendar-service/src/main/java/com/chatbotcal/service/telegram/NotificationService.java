@@ -44,6 +44,16 @@ public class NotificationService {
         notifyUser(telegramEvent.getUserId(), messageText);
     }
 
+    public void notifyUserOnFutureEvents(TelegramEvent telegramEvent, String events) {
+        String messageText = notificationMessageService.getMessage("schedule.upcoming", events);
+        notifyUser(telegramEvent.getUserId(), messageText);
+    }
+
+    public void notifyUserOnCheckAvailability(TelegramEvent telegramEvent, String events) {
+        String messageText = notificationMessageService.getMessage("check.availability", events);
+        notifyUser(telegramEvent.getUserId(), messageText);
+    }
+
     public void notifyUserOnEventCreation(TelegramEvent telegramEvent, Event createdEvent) {
         String messageText = notificationMessageService.getMessage("event.created", createdEvent.getSummary(),
                                                                    tinyUrlService.shorten(createdEvent.getHtmlLink()));
@@ -51,6 +61,11 @@ public class NotificationService {
     }
     public void notifyUserOnSuccessfulAuthorization(String userId) {
         String messageText = notificationMessageService.getMessage("auth.retry", userId);
+        notifyUser(userId, messageText);
+    }
+
+    public void notifyUserOnTextError(String userId) {
+        String messageText = notificationMessageService.getMessage("text.error");
         notifyUser(userId, messageText);
     }
 
