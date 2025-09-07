@@ -77,46 +77,46 @@ services:
     ports:
       - "5000:5000"
 
-#  service:
-#    build:
-#      context: ./chatbot-calendar-service
-#      dockerfile: Dockerfile
-#    image: chatbot-calendar-service:latest
-#    container_name: chatbot-calendar-service
-#    depends_on:
-#      - redpanda
-#      - mysql
-#      - gateway
-#    environment:
-#      # Kafka
-#      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-#      KAFKA_TOPIC: ${KAFKA_TOPIC}
-#
-#      # Telegram
-#      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
-#      TELEGRAM_API_URL: ${TELEGRAM_API_URL}
-#
-#      # OpenAI
-#      OPENAI_API_URL: ${OPENAI_API_URL}
-#      OPENAI_API_KEY: ${OPENAI_API_KEY}
-#
-#      # Spring profile
-#      SPRING_PROFILES_ACTIVE: prod
-#
-#      # DB / App
-#      SYSTEM_LANGUAGE: ${SYSTEM_LANGUAGE}
-#      DB_USERNAME: ${DB_USERNAME}
-#      DB_PASSWORD: ${DB_PASSWORD}
-#      APP_DOMAIN: ${APP_DOMAIN}
+  service:
+    build:
+      context: ./chatbot-calendar-service
+      dockerfile: Dockerfile
+    image: chatbot-calendar-service:latest
+    container_name: chatbot-calendar-service
+    depends_on:
+      - redpanda
+      - mysql
+      - gateway
+    environment:
+      # Kafka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: ${KAFKA_TOPIC}
 
-#
-#      # KeyStore - SSL
-#      KEY_STORE_PASSWORD: ${KEY_STORE_PASSWORD}
-#
-#    networks:
-#      - appnet
-#    ports:
-#      - "8443:8443"
+      # Telegram
+      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
+      TELEGRAM_API_URL: ${TELEGRAM_API_URL}
+
+      # OpenAI
+
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+      # Spring profile
+      SPRING_PROFILES_ACTIVE: prod
+
+      # DB / App
+      SYSTEM_LANGUAGE: ${SYSTEM_LANGUAGE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APP_DOMAIN: ${APP_DOMAIN}
+
+
+      # KeyStore - SSL
+      KEY_STORE_PASSWORD: ${KEY_STORE_PASSWORD}
+
+    networks:
+      - appnet
+    ports:
+      - "8443:8443"
 
 
 
