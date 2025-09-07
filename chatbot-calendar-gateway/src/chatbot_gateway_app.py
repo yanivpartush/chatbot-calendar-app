@@ -4,7 +4,6 @@ from confluent_kafka import Producer
 
 from langdetect import detect, DetectorFactory
 
-
 import os
 import json
 import logging
@@ -34,6 +33,24 @@ logger = logging.getLogger(__name__)
 producer = Producer({'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS})
 
 
+def load_messages():
+    base_path = os.path.join(os.path.dirname(__file__), "resources")
+    filename = os.path.join(base_path, f"messages_{SYSTEM_LANGUAGE}.properties" if SYSTEM_LANGUAGE != "en" else "messages.properties")
+
+    messages = {}
+    try:
+        with open(filename, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    key, value = line.split("=", 1)
+                    messages[key.strip()] = value.strip().replace("\\n", "\n")
+    except FileNotFoundError:
+        raise RuntimeError(f"Message file '{filename}' not found!")
+    return messages
+
 def delivery_report(err, msg):
     if err is not None:
         logger.error(f"Message delivery failed: {err}")
@@ -48,21 +65,16 @@ if os.path.exists(USERS_FILE):
 else:
     users_seen = set()
 
+SYSTEM_LANGUAGE = os.getenv("SYSTEM_LANGUAGE", "en")
+messages = load_messages()
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     chat_id = update.effective_chat.id
 
     if user_id not in users_seen:
-        welcome_message = (
-            "שלום\n\n"
-            "ברוך/ה הבא/ה ל-Calendar Bot שלנו! \n\n"
-            "כעת ניתן לשלוח:\n"
-            " ✍️ הודעת טקסט חופשית\n"
-            " 🎙️ הודעה קולית (תישלח ל-Kafka כמו שהיא)\n\n"
-            "הבוט ידאג לתעד את האירועים ביומן שלך או להחזיר את לוח הזמנים."
-        )
-        await context.bot.send_message(chat_id=chat_id, text=welcome_message, parse_mode="Markdown")
+        await context.bot.send_message(chat_id=chat_id, text=messages["welcome_message"], parse_mode="Markdown")
 
         # Save user as seen
         users_seen.add(user_id)
@@ -88,7 +100,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     username = update.effective_user.username
     tz_name = os.getenv("TIME_ZONE", "UTC")
 
-    await context.bot.send_message(chat_id=chat_id, text="הודעת טקסט התקבלה. אנחנו על זה!")
+    await context.bot.send_message(chat_id=chat_id, text=messages["text_received"])
 
     data = {
         "userId": user_id,
@@ -127,7 +139,7 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
             voice_base64 = base64.b64encode(voice_bytes).decode("utf-8")
 
 
-        await context.bot.send_message(chat_id=chat_id, text="הודעה קולית התקבלה. אנחנו על זה!")
+        await context.bot.send_message(chat_id=chat_id, text=messages["voice_received"])
 
         data = {
             "userId": user_id,
