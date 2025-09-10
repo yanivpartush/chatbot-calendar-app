@@ -1,90 +1,72 @@
 {
   "dashboard": {
     "id": null,
-    "title": "Telegram Event Monitoring",
-    "tags": ["telegram", "events"],
+    "title": "Telegram Events Monitoring",
+    "tags": ["telegram", "events", "prometheus"],
     "timezone": "browser",
+    "schemaVersion": 36,
+    "version": 1,
     "panels": [
       {
-        "type": "graph",
-        "title": "Received Events",
+        "type": "timeseries",
+        "title": "Telegram Events by Status (Handler)",
+        "datasource": "Prometheus",
         "targets": [
           {
-            "expr": "telegram_events_received_total",
-            "legendFormat": "Received"
+            "expr": "sum by (status) (telegram_events_total)",
+            "legendFormat": "{{status}}",
+            "refId": "A"
           }
         ],
-        "yaxes": [{ "format": "short" }]
+        "fieldConfig": {
+          "defaults": {
+            "unit": "none"
+          }
+        },
+        "gridPos": {"x": 0, "y": 0, "w": 12, "h": 6}
       },
       {
-        "type": "graph",
-        "title": "Sent Events",
+        "type": "timeseries",
+        "title": "Telegram Events by Status (Consumer)",
+        "datasource": "Prometheus",
         "targets": [
           {
-            "expr": "telegram_events_sent_total",
-            "legendFormat": "Sent"
+            "expr": "sum by (status) (telegram_events_consumer_total)",
+            "legendFormat": "{{status}}",
+            "refId": "A"
           }
         ],
-        "yaxes": [{ "format": "short" }]
+        "fieldConfig": {
+          "defaults": {
+            "unit": "none"
+          }
+        },
+        "gridPos": {"x": 12, "y": 0, "w": 12, "h": 6}
       },
       {
-        "type": "graph",
-        "title": "Event Errors",
+        "type": "timeseries",
+        "title": "Text Event Processing Duration",
+        "datasource": "Prometheus",
         "targets": [
           {
-            "expr": "telegram_events_errors_total",
-            "legendFormat": "Consumer Errors"
+            "expr": "histogram_quantile(0.5, sum(rate(telegram_events_processing_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p50",
+            "refId": "A"
           },
           {
-            "expr": "telegram_events_send_errors_total",
-            "legendFormat": "Producer Errors"
+            "expr": "histogram_quantile(0.95, sum(rate(telegram_events_processing_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95",
+            "refId": "B"
           }
         ],
-        "yaxes": [{ "format": "short" }]
-      },
-      {
-        "type": "graph",
-        "title": "Event Processing Duration",
-        "targets": [
-          {
-            "expr": "telegram_event_processing_duration_seconds_sum / telegram_event_processing_duration_seconds_count",
-            "legendFormat": "Handler avg duration (s)"
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
           }
-        ],
-        "yaxes": [{ "format": "s" }]
-      },
-      {
-        "type": "graph",
-        "title": "Event Send Duration",
-        "targets": [
-          {
-            "expr": "telegram_event_send_duration_seconds_sum / telegram_event_send_duration_seconds_count",
-            "legendFormat": "Producer avg duration (s)"
-          }
-        ],
-        "yaxes": [{ "format": "s" }]
-      },
-      {
-        "type": "graph",
-        "title": "Message Status Count",
-        "targets": [
-          {
-            "expr": "telegram_events_status{status=\"SUCCESS\"}",
-            "legendFormat": "SUCCESS"
-          },
-          {
-            "expr": "telegram_events_status{status=\"FAILED\"}",
-            "legendFormat": "FAILED"
-          },
-          {
-            "expr": "telegram_events_status{status=\"UNAUTHORIZED\"}",
-            "legendFormat": "UNAUTHORIZED"
-          }
-        ],
-        "yaxes": [{ "format": "short" }]
+        },
+        "gridPos": {"x": 0, "y": 6, "w": 12, "h": 6}
       }
-    ],
-    "schemaVersion": 30,
-    "version": 1
-  }
+    ]
+  },
+  "overwrite": true
 }

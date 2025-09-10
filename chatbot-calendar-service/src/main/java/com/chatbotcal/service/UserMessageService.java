@@ -107,4 +107,8 @@ public class UserMessageService {
             throw e;
         }
     }
+
+    public int countMessagesInProgress() {
+        return userMessageRepository.countByStatus(MessageStatus.IN_PROGRESS);
+    }
 }

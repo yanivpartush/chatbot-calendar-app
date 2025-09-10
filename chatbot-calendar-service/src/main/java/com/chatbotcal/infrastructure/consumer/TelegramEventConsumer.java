@@ -29,31 +29,35 @@ public class TelegramEventConsumer {
     @Autowired
     public TelegramEventConsumer(TelegramEventHandler eventHandler,
                                  ObjectMapper objectMapper,
-                                 MeterRegistry registry) {
+                                 MeterRegistry meterRegistry) {
         this.eventHandler = eventHandler;
         this.objectMapper = objectMapper;
-        this.meterRegistry = registry;
+        this.meterRegistry = meterRegistry;
 
-        this.receivedCounter = registry.counter("telegram_events_received_total");
-        this.errorCounter = registry.counter("telegram_events_errors_total");
+        this.receivedCounter = Counter.builder("telegram.events.consumer.total")
+                .description("Telegram events received and processed by consumer")
+                .tag("status", "RECEIVED")
+                .register(meterRegistry);
+
+        this.errorCounter = Counter.builder("telegram.events.consumer.total")
+                .description("Telegram events errors during processing")
+                .tag("status", "ERROR")
+                .register(meterRegistry);
     }
 
     @KafkaListener(topics = "${spring.kafka.topic.telegram-messages}", groupId = "${spring.kafka.consumer.group-id}")
-    @Timed(value = "telegram_event_processing_duration", description = "Time taken to process TelegramEvent")
-    @Counted(value = "telegram_event_processing_total", description = "Number of processed TelegramEvents")
+    @Timed(value = "telegram.events.consumer.processing.duration", description = "Time taken to process TelegramEvent in consumer")
+    @Counted(value = "telegram.events.consumer.processing.count", description = "Number of TelegramEvents processed in consumer")
     public void consume(String message, Acknowledgment ack) {
         receivedCounter.increment();
         try {
             logger.info("Received message from Kafka");
             TelegramEvent event = objectMapper.readValue(message, TelegramEvent.class);
             event.dispatch(eventHandler);
-        }
-        catch (Exception e)
-        {
-            logger.error("Error while processing message : {}", e);
+        } catch (Exception e) {
+            logger.error("Error while processing message: {}", e.getMessage(), e);
             errorCounter.increment();
-        }
-        finally {
+        } finally {
             ack.acknowledge();
         }
     }

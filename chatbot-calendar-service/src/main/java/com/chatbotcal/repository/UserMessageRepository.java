@@ -15,4 +15,6 @@ public interface UserMessageRepository extends JpaRepository<UserMessage, Long> 
     public List<UserMessage> findByUserId(String userId);
 
     List<UserMessage> findByUserIdAndStatus(String state, MessageStatus received);
+
+    int countByStatus(MessageStatus status);
 }
