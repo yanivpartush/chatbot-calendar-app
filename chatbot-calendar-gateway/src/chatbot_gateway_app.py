@@ -73,13 +73,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     chat_id = update.effective_chat.id
 
-    if user_id not in users_seen:
-        await context.bot.send_message(chat_id=chat_id, text=messages["welcome_message"], parse_mode="Markdown")
 
-        # Save user as seen
-        users_seen.add(user_id)
-        with open(USERS_FILE, "w") as f:
-            json.dump(list(users_seen), f)
+    await context.bot.send_message(chat_id=chat_id, text=messages["welcome_message"], parse_mode="Markdown")
+
+
+
+
 
 def detect_language(text: str) -> str:
     try:
