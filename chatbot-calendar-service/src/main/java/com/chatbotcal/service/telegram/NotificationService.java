@@ -44,6 +44,11 @@ public class NotificationService {
         notifyUser(telegramEvent.getUserId(), messageText);
     }
 
+    public void notifyUserOnFirstTimeConnection(TelegramEvent telegramEvent, String link) {
+        String messageText = notificationMessageService.getMessage("calendar.firstTimeConnect", link);
+        notifyUser(telegramEvent.getUserId(), messageText);
+    }
+
     public void notifyUserOnFutureEvents(TelegramEvent telegramEvent, String events) {
         String messageText = notificationMessageService.getMessage("schedule.upcoming", events);
         notifyUser(telegramEvent.getUserId(), messageText);

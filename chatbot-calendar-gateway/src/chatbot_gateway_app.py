@@ -76,6 +76,26 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(chat_id=chat_id, text=messages["welcome_message"], parse_mode="Markdown")
 
+    data = {
+        "userId": user_id,
+        "text": "__DUMMY_AUTH_CHECK__",
+        "languageCode": SYSTEM_LANGUAGE,
+        "firstName": update.effective_user.first_name,
+        "lastName": update.effective_user.last_name,
+        "username": update.effective_user.username,
+        "timeZone": os.getenv("TIME_ZONE", "UTC"),
+        "type": "text"
+    }
+
+    producer.produce(
+        KAFKA_TOPIC,
+        json.dumps(data).encode("utf-8"),
+        callback=delivery_report
+    )
+    producer.poll(0)
+
+    logger.info(f"Dummy auth check sent for user {user_id}")
+
 
 
 

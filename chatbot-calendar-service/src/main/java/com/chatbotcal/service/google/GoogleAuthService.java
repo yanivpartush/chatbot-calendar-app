@@ -89,7 +89,8 @@ public class GoogleAuthService {
 
     }
 
-    public Optional<Credential> getUserCredential(String userId) {
+
+    public Optional<Credential> getAndUpdateUserCredential(String userId) {
         return tokenRepository.findById(userId)
                 .map(token -> {
                     try {

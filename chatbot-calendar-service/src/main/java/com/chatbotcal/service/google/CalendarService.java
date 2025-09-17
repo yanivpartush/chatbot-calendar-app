@@ -6,6 +6,7 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.model.CalendarList;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.Events;
@@ -27,6 +28,8 @@ public class CalendarService {
     public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final Logger logger = LoggerFactory.getLogger(CalendarService.class);
     private static final String CALENDAR_ID = "primary";
+
+    private final GoogleAuthService googleAuthService;
 
     private Calendar buildClient(Credential credential) throws Exception {
         return new Calendar.Builder(
@@ -96,4 +99,24 @@ public class CalendarService {
         return result;
     }
 
+    public boolean checkAuthorization(String userId) {
+        return googleAuthService.getAndUpdateUserCredential(userId)
+                .map(credential -> {
+                    try {
+                        Calendar client = buildClient(credential);
+                        CalendarList calendarList = client.calendarList().list()
+                                .setMaxResults(1)
+                                .execute();
+                        logger.info("User {} has calendar access, calendars found: {}", userId, calendarList.getItems().size());
+                        return true;
+                    } catch (Exception e) {
+                        logger.warn("Calendar authorization check failed for user {}: {}", userId, e.getMessage());
+                        return false;
+                    }
+                })
+                .orElseGet(() -> {
+                    logger.warn("No credential found for user {}", userId);
+                    return false;
+                });
+    }
 }

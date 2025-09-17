@@ -148,6 +148,15 @@ public class TelegramEventHandler {
     @Timed(value = "telegram.events.processing.duration", description = "Time taken to process TextEvent")
     @Counted(value = "telegram.events.processing.count", description = "Number of TextEvent processed")
     public void on(TextEvent textEvent) throws Exception {
+
+        if ("__DUMMY_AUTH_CHECK__".equals(textEvent.getText())) {
+            userService.getOrCreateUser(textEvent.getUserId(),textEvent.getFirstName()
+                                                ,textEvent.getLastName()
+                                                ,textEvent.getUsername(),textEvent.getTimeZone());
+            handleDummyAuthCheck(textEvent);
+            return;
+        }
+
         try {
             UserIntent userIntent = intentClassificationService.classifyMessage(textEvent.getText());
             UserMessage message = saveUserAndMessage(textEvent, userIntent);
@@ -159,8 +168,22 @@ public class TelegramEventHandler {
         }
     }
 
+    private void handleDummyAuthCheck(TextEvent textEvent) {
+        boolean hasCalendarPermission = calendarService.checkAuthorization(textEvent.getUserId());
+        if (hasCalendarPermission) {
+            logger.info("User {} already has calendar permission", textEvent.getUserId());
+        }
+        else
+        {
+            String authUrl = tinyUrlService.shorten(googleAuthService.getAuthUrl(textEvent.getUserId()));
+            logger.info("User {} is not authorized, sending authorization link {}", textEvent.getUserId(), authUrl);
+            notificationService.notifyUserOnFirstTimeConnection(textEvent, authUrl);
+        }
+    }
+
+
     public void dispatch(TelegramEvent telegramEvent, UserMessage message) throws Exception {
-        googleAuthService.getUserCredential(message.getUser().getId()).ifPresentOrElse(
+        googleAuthService.getAndUpdateUserCredential(message.getUser().getId()).ifPresentOrElse(
                 credential -> {
                     try {
                         switch (message.getUserIntent()) {
@@ -251,4 +274,6 @@ public class TelegramEventHandler {
         );
         return userMessageService.saveUserMessage(user, telegramEvent, userIntent);
     }
+
+
 }
