@@ -26,7 +26,16 @@ public class OAuthCallbackController {
     public String callback(@RequestParam String code, @RequestParam String state) throws Exception {
         authService.exchangeCode(state, code);
         notificationService.notifyUserOnSuccessfulAuthorization(state);
-        return "Authorization successful for user " + state;
+
+        // Return an HTML response with a success message
+        return "<html>" +
+                "<head><title>Sign-in Successful</title></head>" +
+                "<body style='font-family: Arial, sans-serif; text-align: center; margin-top: 50px;'>" +
+                "<h1>Sign-in successful!</h1>" +
+                "<p>Continue in <a href='https://t.me/yaniv_calendar_bot' target='_blank'>Telegram</a></p>" +
+                "</body>" +
+                "</html>";
     }
+
 
 }
